@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">AnimalFeed</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="login">login</string>
+    <string name="register">register</string>
+    <string name="forgot_password">forgot password</string>
+    <string name="enter_your_email">enter your email</string>
+    <string name="enter_your_password">enter your password</string>
+    <string name="enter_your_username">enter your username</string>
+    <string name="confirm_your_password">confirm your password</string>
 </resources>
