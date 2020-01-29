@@ -1,6 +1,7 @@
 package com.hefny.hady.animalfeed.repository.auth
 
 import com.hefny.hady.animalfeed.api.FirebaseAuthService
+import com.hefny.hady.animalfeed.modelsTest.User
 import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao
 import com.hefny.hady.animalfeed.persistence.AuthTokenDao
 import com.hefny.hady.animalfeed.session.SessionManager
@@ -13,4 +14,7 @@ constructor(
     val sessionManager: SessionManager
 ) {
 
+    suspend fun getUsers(): List<User> {
+        return firebaseAuthService.getUsers()
+    }
 }
