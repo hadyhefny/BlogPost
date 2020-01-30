@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.Kodein
 import org.kodein.di.KodeinAware
 import org.kodein.di.android.kodein
-import org.kodein.di.description
 import org.kodein.di.generic.instance
 
 class AuthActivity() : AppCompatActivity(), KodeinAware {
@@ -39,9 +38,7 @@ class AuthActivity() : AppCompatActivity(), KodeinAware {
                 }
             }
         }
-        println("Kodein: =====================-BINDINGS-=====================")
-        println("Kodein: ${kodein.container.tree.bindings.description()}")
-        println("Kodein: ====================================================")
+
     }
 
     suspend fun getUsers(): List<User> {
