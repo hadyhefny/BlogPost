@@ -2,15 +2,15 @@ package com.hefny.hady.animalfeed.ui.auth
 
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.animalfeed.R
 import kotlinx.android.synthetic.main.fragment_launcher.*
 
-class LauncherFragment : Fragment() {
+class LauncherFragment : BaseAuthFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,6 +31,8 @@ class LauncherFragment : Fragment() {
         btn_forgotPassword.setOnClickListener {
             navForgotPassword()
         }
+
+        Log.d("LauncherFragment", "onViewCreated: ${viewModel.hashCode()}")
     }
 
     private fun navLogin() {

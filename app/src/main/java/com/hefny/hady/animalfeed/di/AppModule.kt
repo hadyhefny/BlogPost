@@ -1,40 +1,59 @@
 package com.hefny.hady.animalfeed.di
 
-import com.hefny.hady.animalfeed.api.FirebaseAuthService
-import com.hefny.hady.animalfeed.api.ServiceGenerator
+import android.app.Application
+import androidx.room.Room
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
+import com.bumptech.glide.request.RequestOptions
+import com.hefny.hady.animalfeed.R
+import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao
 import com.hefny.hady.animalfeed.persistence.AppDatabase
-import com.hefny.hady.animalfeed.repository.auth.AuthRepository
-import com.hefny.hady.animalfeed.session.SessionManager
-import org.kodein.di.Kodein
-import org.kodein.di.generic.bind
-import org.kodein.di.generic.instance
-import org.kodein.di.generic.singleton
+import com.hefny.hady.animalfeed.persistence.AppDatabase.Companion.DATABASE_NAME
+import com.hefny.hady.animalfeed.persistence.AuthTokenDao
+import dagger.Module
+import dagger.Provides
+import javax.inject.Singleton
 
-val appModule = Kodein.Module("AppModule") {
+@Module
+class AppModule {
 
-    // binding retrofit api with retrofit instance
-    bind() from singleton {
-        ServiceGenerator.getRetrofitInstance()
-            .create(FirebaseAuthService::class.java)
+    @Singleton
+    @Provides
+    fun provideAppDb(app: Application): AppDatabase {
+        return Room
+            .databaseBuilder(app, AppDatabase::class.java, DATABASE_NAME)
+            .fallbackToDestructiveMigration() // get correct database version if schema changed
+            .build()
     }
-    // binding room dao with room instance
-    bind() from singleton {
-        AppDatabase.RoomInstance.getRoomInstance(context = instance()).getAccountPropertiesDao()
+
+    @Singleton
+    @Provides
+    fun provideAuthTokenDao(db: AppDatabase): AuthTokenDao {
+        return db.getAuthTokenDao()
     }
-    bind() from singleton {
-        AppDatabase.RoomInstance.getRoomInstance(context = instance()).getAuthTokenDao()
+
+    @Singleton
+    @Provides
+    fun provideAccountPropertiesDao(db: AppDatabase): AccountPropertiesDao {
+        return db.getAccountPropertiesDao()
     }
-    // binding AuthRepository
-    bind() from singleton {
-        AuthRepository(
-            authTokenDao = instance(),
-            accountPropertiesDao = instance(),
-            firebaseAuthService = instance(),
-            sessionManager = instance()
-        )
+
+    @Singleton
+    @Provides
+    fun provideRequestOptions(): RequestOptions {
+        return RequestOptions
+            .placeholderOf(R.drawable.default_image)
+            .error(R.drawable.default_image)
     }
-    // binding SessionManager
-    bind() from singleton {
-        SessionManager(authTokenDao = instance(), application = instance())
+
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        application: Application,
+        requestOptions: RequestOptions
+    ): RequestManager {
+        return Glide.with(application)
+            .setDefaultRequestOptions(requestOptions)
     }
+
 }
