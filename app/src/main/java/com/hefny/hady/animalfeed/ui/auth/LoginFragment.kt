@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.hefny.hady.animalfeed.R
+import com.hefny.hady.animalfeed.models.AuthToken
 import com.hefny.hady.animalfeed.ui.auth.state.LoginFields
 import kotlinx.android.synthetic.main.fragment_login.*
 
@@ -27,15 +28,22 @@ class LoginFragment : BaseAuthFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d("LoginFragment", "onViewCreated: ${viewModel.hashCode()}")
-
         subscribeObservers()
+        login_button.setOnClickListener {
+            viewModel.setAuthToken(
+                AuthToken(
+                    1,
+                    "gdfngidfng4nt43n43jn34jn"
+                )
+            )
+        }
     }
 
     private fun subscribeObservers() {
         viewModel.viewState.observe(viewLifecycleOwner, Observer { authViewState ->
             authViewState.loginFields?.let { loginFields ->
-                loginFields.login_email?.let { editText_email.setText(it) }
-                loginFields.login_password?.let { editText_password.setText(it) }
+                loginFields.login_email?.let { input_email.setText(it) }
+                loginFields.login_password?.let { input_password.setText(it) }
             }
         })
     }
@@ -43,7 +51,7 @@ class LoginFragment : BaseAuthFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.setLoginFields(
-            LoginFields(editText_email.text.toString(), editText_password.text.toString())
+            LoginFields(input_email.text.toString(), input_password.text.toString())
         )
     }
 }
