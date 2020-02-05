@@ -9,15 +9,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.hefny.hady.animalfeed.R
-import com.hefny.hady.animalfeed.util.ApiEmptyResponse
-import com.hefny.hady.animalfeed.util.ApiErrorResponse
-import com.hefny.hady.animalfeed.util.ApiSuccessResponse
+import com.hefny.hady.animalfeed.ui.auth.state.LoginFields
+import kotlinx.android.synthetic.main.fragment_login.*
 
 /**
  * A simple [Fragment] subclass.
  */
 class LoginFragment : BaseAuthFragment() {
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -30,19 +28,22 @@ class LoginFragment : BaseAuthFragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("LoginFragment", "onViewCreated: ${viewModel.hashCode()}")
 
-        viewModel.testLogin("hady.hefny@gmail.com", "123456")
-            .observe(viewLifecycleOwner, Observer { response ->
-                when (response) {
-                    is ApiSuccessResponse -> Log.d(
-                        "AppDebug",
-                        "LoginFragment: ${response.body}"
-                    )
-                    is ApiEmptyResponse -> Log.d("AppDebug", "LoginFragment: Empty Response")
-                    is ApiErrorResponse -> Log.d(
-                        "AppDebug",
-                        "LoginFragment: Error:  ${response.errorMessage}"
-                    )
-                }
-            })
+        subscribeObservers()
+    }
+
+    private fun subscribeObservers() {
+        viewModel.viewState.observe(viewLifecycleOwner, Observer { authViewState ->
+            authViewState.loginFields?.let { loginFields ->
+                loginFields.login_email?.let { editText_email.setText(it) }
+                loginFields.login_password?.let { editText_password.setText(it) }
+            }
+        })
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.setLoginFields(
+            LoginFields(editText_email.text.toString(), editText_password.text.toString())
+        )
     }
 }
