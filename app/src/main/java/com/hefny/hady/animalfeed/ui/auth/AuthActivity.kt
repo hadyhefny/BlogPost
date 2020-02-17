@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.hefny.hady.animalfeed.R
 import com.hefny.hady.animalfeed.ui.BaseActivity
+import com.hefny.hady.animalfeed.ui.ResponseType
 import com.hefny.hady.animalfeed.ui.main.MainActivity
 import com.hefny.hady.animalfeed.viewmodels.ViewModelProviderFactory
 import javax.inject.Inject
@@ -27,13 +28,46 @@ class AuthActivity : BaseActivity() {
     }
 
     private fun subscribeObservers() {
-        viewModel.viewState.observe(this, Observer {
+
+        viewModel.dataState.observe(this, Observer { dataState ->
+            dataState.data?.let { data ->
+                data.data?.let { event ->
+                    event.getContentIfNotHandled()?.let {
+                        it.authToken?.let {
+                            Log.d(TAG, "AuthActivity, DataState: $it")
+                            viewModel.setAuthToken(it)
+                        }
+                    }
+                }
+                data.response?.let { event ->
+                    event.getContentIfNotHandled()?.let {
+                        when(it.responseType){
+                            is ResponseType.Dialog->{
+                                // show dialog
+                            }
+                            is ResponseType.Toast->{
+                                // show toats
+                            }
+                            is ResponseType.None->{
+                                // print to log
+                                Log.e(TAG, "AuthActivity, Response: ${it.message}, ${it.responseType} ")
+                            }
+                        }
+                    }
+                }
+            }
+
+        })
+
+        viewModel.viewState.observe(this, Observer
+        {
             Log.d(TAG, "AuthActivity, subscribeObservers: AuthViewState: ${it}")
             it.authToken?.let {
                 sessionManager.login(it)
             }
         })
-        sessionManager.cachedToken.observe(this, Observer { dataState ->
+        sessionManager.cachedToken.observe(this, Observer
+        { dataState ->
             Log.d(TAG, "AuthActivity, subscribeObservers: AuthDataState: ${dataState}")
             dataState.let { authToken ->
                 if (authToken != null && authToken.account_pk != -1 && authToken.token != null) {

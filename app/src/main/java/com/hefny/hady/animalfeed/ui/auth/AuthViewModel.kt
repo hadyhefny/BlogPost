@@ -1,5 +1,6 @@
 package com.hefny.hady.animalfeed.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.hefny.hady.animalfeed.models.AuthToken
 import com.hefny.hady.animalfeed.repository.auth.AuthRepository
@@ -20,10 +21,15 @@ constructor(
     override fun handleStateEvent(stateEvent: AuthStateEvent): LiveData<DataState<AuthViewState>> {
         return when (stateEvent) {
             is AuthStateEvent.LoginAttemptEvent -> {
-                AbsentLiveData.create()
+                authRepository.attemptLogin(stateEvent.email, stateEvent.password)
             }
             is AuthStateEvent.RegisterAttemptEvent -> {
-                AbsentLiveData.create()
+                authRepository.attemptRegister(
+                    stateEvent.email,
+                    stateEvent.userName,
+                    stateEvent.password,
+                    stateEvent.confirm_password
+                )
             }
             is AuthStateEvent.CheckPreviousAuthEvent -> {
                 AbsentLiveData.create()

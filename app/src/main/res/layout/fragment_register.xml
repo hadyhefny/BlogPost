@@ -11,11 +11,11 @@
         android:layout_height="match_parent">
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputText_email"
+            android:id="@+id/input_email_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/enter_your_email"
-            app:layout_constraintBottom_toTopOf="@id/inputText_username"
+            app:layout_constraintBottom_toTopOf="@id/input_username_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -23,7 +23,7 @@
             app:layout_constraintVertical_chainStyle="packed">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editText_email"
+                android:id="@+id/inputText_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"/>
@@ -33,36 +33,36 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/inputText_username"
+            android:id="@+id/input_username_layout"
             android:hint="@string/enter_your_username"
-            app:layout_constraintTop_toBottomOf="@id/inputText_email"
+            app:layout_constraintTop_toBottomOf="@id/input_email_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/inputText_password"
+            app:layout_constraintBottom_toTopOf="@id/input_password_layout"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintVertical_bias=".1">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText_username"/>
+                android:id="@+id/inputText_username"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/inputText_password"
+            android:id="@+id/input_password_layout"
             android:hint="@string/enter_your_password"
-            app:layout_constraintTop_toBottomOf="@id/inputText_username"
+            app:layout_constraintTop_toBottomOf="@id/input_username_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/inputText_confirm_password">
+            app:layout_constraintBottom_toTopOf="@id/input_confirm_password_layout">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText_password"
+                android:id="@+id/inputText_password"
                 android:inputType="textPassword"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -70,9 +70,9 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/inputText_confirm_password"
+            android:id="@+id/input_confirm_password_layout"
             android:hint="@string/confirm_your_password"
-            app:layout_constraintTop_toBottomOf="@id/inputText_password"
+            app:layout_constraintTop_toBottomOf="@id/input_password_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toTopOf="@id/btn_register">
@@ -80,7 +80,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText_confirm_password"
+                android:id="@+id/inputText_confirm_password"
                 android:inputType="textPassword"/>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -90,7 +90,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/register"
-            app:layout_constraintTop_toBottomOf="@id/inputText_confirm_password"
+            app:layout_constraintTop_toBottomOf="@id/input_confirm_password_layout"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
