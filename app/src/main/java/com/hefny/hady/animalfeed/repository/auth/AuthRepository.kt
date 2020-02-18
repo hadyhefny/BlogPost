@@ -14,7 +14,7 @@ import com.hefny.hady.animalfeed.ui.auth.state.AuthViewState
 import com.hefny.hady.animalfeed.util.ApiEmptyResponse
 import com.hefny.hady.animalfeed.util.ApiErrorResponse
 import com.hefny.hady.animalfeed.util.ApiSuccessResponse
-import com.hefny.hady.animalfeed.util.ErrorHandling.Companion.UNKNOWN_ERROR
+import com.hefny.hady.animalfeed.util.ErrorHandling
 import javax.inject.Inject
 
 class AuthRepository
@@ -53,7 +53,7 @@ constructor(
                         is ApiEmptyResponse -> {
                             value = DataState.error(
                                 Response(
-                                    message = UNKNOWN_ERROR,
+                                    message = ErrorHandling.ERROR_UNKNOWN,
                                     responseType = ResponseType.Dialog()
                                 )
                             )
@@ -97,7 +97,7 @@ constructor(
                         is ApiEmptyResponse -> {
                             value = DataState.error(
                                 Response(
-                                    message = UNKNOWN_ERROR,
+                                    message = ErrorHandling.ERROR_UNKNOWN,
                                     responseType = ResponseType.Dialog()
                                 )
                             )

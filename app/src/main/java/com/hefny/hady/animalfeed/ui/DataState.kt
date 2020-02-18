@@ -10,9 +10,9 @@ data class DataState<T>(
             return DataState(error = Event(StateError(response)))
         }
 
-        fun <T> loading(isLoading: Loading, cachedData: T? = null): DataState<T> {
+        fun <T> loading(isLoading: Boolean, cachedData: T? = null): DataState<T> {
             return DataState(
-                loading = isLoading,
+                loading = Loading(isLoading),
                 data = Data(Event.dataEvent(cachedData), response = null)
             )
         }
