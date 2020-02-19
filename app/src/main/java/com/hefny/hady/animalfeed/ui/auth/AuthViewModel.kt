@@ -1,6 +1,5 @@
 package com.hefny.hady.animalfeed.ui.auth
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import com.hefny.hady.animalfeed.models.AuthToken
 import com.hefny.hady.animalfeed.repository.auth.AuthRepository
@@ -66,5 +65,14 @@ constructor(
         }
         update.authToken = authToken
         _viewState.value = update
+    }
+
+    fun cancelActiveJobs() {
+        authRepository.cancelActiveJobs()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelActiveJobs()
     }
 }
