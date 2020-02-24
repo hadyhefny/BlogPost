@@ -60,6 +60,9 @@ dependencies {
     // material design
     def material_version = "1.0.0"
     implementation "com.google.android.material:material:$material_version"
+    // material dialogs
+    def material_dialogs_version = "3.3.0"
+    implementation "com.afollestad.material-dialogs:core:$material_dialogs_version"
     // room
     def room_version = "2.2.3"
     implementation "androidx.room:room-runtime:$room_version"

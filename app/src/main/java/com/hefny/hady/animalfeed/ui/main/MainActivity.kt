@@ -3,6 +3,7 @@ package com.hefny.hady.animalfeed.ui.main
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.Observer
 import com.hefny.hady.animalfeed.R
 import com.hefny.hady.animalfeed.ui.BaseActivity
@@ -32,5 +33,13 @@ class MainActivity : BaseActivity() {
         val intent = Intent(this, AuthActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    override fun displayProgressBar(loading: Boolean) {
+        if (loading) {
+            progress_bar.visibility = View.VISIBLE
+        } else {
+            progress_bar.visibility = View.GONE
+        }
     }
 }

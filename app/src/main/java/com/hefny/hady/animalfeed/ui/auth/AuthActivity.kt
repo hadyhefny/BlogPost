@@ -3,6 +3,7 @@ package com.hefny.hady.animalfeed.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -10,9 +11,9 @@ import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import com.hefny.hady.animalfeed.R
 import com.hefny.hady.animalfeed.ui.BaseActivity
-import com.hefny.hady.animalfeed.ui.ResponseType
 import com.hefny.hady.animalfeed.ui.main.MainActivity
 import com.hefny.hady.animalfeed.viewmodels.ViewModelProviderFactory
+import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 
@@ -34,31 +35,13 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
     private fun subscribeObservers() {
 
         viewModel.dataState.observe(this, Observer { dataState ->
+            onDataStateChange(dataState)
             dataState.data?.let { data ->
                 data.data?.let { event ->
                     event.getContentIfNotHandled()?.let {
                         it.authToken?.let {
                             Log.d(TAG, "AuthActivity, DataState: $it")
                             viewModel.setAuthToken(it)
-                        }
-                    }
-                }
-                data.response?.let { event ->
-                    event.getContentIfNotHandled()?.let {
-                        when (it.responseType) {
-                            is ResponseType.Dialog -> {
-                                // show dialog
-                            }
-                            is ResponseType.Toast -> {
-                                // show toats
-                            }
-                            is ResponseType.None -> {
-                                // print to log
-                                Log.e(
-                                    TAG,
-                                    "AuthActivity, Response: ${it.message}, ${it.responseType} "
-                                )
-                            }
                         }
                     }
                 }
@@ -97,5 +80,13 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
         arguments: Bundle?
     ) {
         viewModel.cancelActiveJobs()
+    }
+
+    override fun displayProgressBar(loading: Boolean) {
+        if (loading) {
+            progress_bar.visibility = View.VISIBLE
+        } else {
+            progress_bar.visibility = View.GONE
+        }
     }
 }
