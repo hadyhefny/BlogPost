@@ -1,5 +1,6 @@
 package com.hefny.hady.animalfeed.di.auth
 
+import android.content.SharedPreferences
 import com.hefny.hady.animalfeed.api.OpenApiAuthService
 import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao
 import com.hefny.hady.animalfeed.persistence.AuthTokenDao
@@ -26,13 +27,17 @@ class AuthModule {
         sessionManager: SessionManager,
         authTokenDao: AuthTokenDao,
         accountPropertiesDao: AccountPropertiesDao,
-        openApiAuthService: OpenApiAuthService
+        openApiAuthService: OpenApiAuthService,
+        sharedPreferences: SharedPreferences,
+        editor: SharedPreferences.Editor
     ): AuthRepository {
         return AuthRepository(
             authTokenDao,
             accountPropertiesDao,
             openApiAuthService,
-            sessionManager
+            sessionManager,
+            sharedPreferences,
+            editor
         )
     }
 }

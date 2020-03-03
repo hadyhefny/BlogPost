@@ -1,6 +1,8 @@
 package com.hefny.hady.animalfeed.di
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -14,6 +16,7 @@ import com.hefny.hady.animalfeed.persistence.AppDatabase.Companion.DATABASE_NAME
 import com.hefny.hady.animalfeed.persistence.AuthTokenDao
 import com.hefny.hady.animalfeed.util.Constants
 import com.hefny.hady.animalfeed.util.LiveDataCallAdapterFactory
+import com.hefny.hady.animalfeed.util.PreferenceKeys
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
@@ -77,4 +80,15 @@ class AppModule {
             .setDefaultRequestOptions(requestOptions)
     }
 
+    @Singleton
+    @Provides
+    fun provideSharedPreferences(app: Application): SharedPreferences {
+        return app.getSharedPreferences(PreferenceKeys.APP_PREFERENCES, Context.MODE_PRIVATE)
+    }
+
+    @Singleton
+    @Provides
+    fun provideSharedPrefsEditor(sharedPreferences: SharedPreferences): SharedPreferences.Editor {
+        return sharedPreferences.edit()
+    }
 }

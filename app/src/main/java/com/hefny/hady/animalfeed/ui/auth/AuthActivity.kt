@@ -11,6 +11,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import com.hefny.hady.animalfeed.R
 import com.hefny.hady.animalfeed.ui.BaseActivity
+import com.hefny.hady.animalfeed.ui.auth.state.AuthStateEvent
 import com.hefny.hady.animalfeed.ui.main.MainActivity
 import com.hefny.hady.animalfeed.viewmodels.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.activity_auth.*
@@ -30,6 +31,11 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
         viewModel = ViewModelProvider(this, providerFactory).get(AuthViewModel::class.java)
         findNavController(R.id.auth_nav_host_fragment).addOnDestinationChangedListener(this)
         subscribeObservers()
+        checkPreviousAuthUser()
+    }
+
+    private fun checkPreviousAuthUser() {
+        viewModel.setStateEvent(AuthStateEvent.CheckPreviousAuthEvent())
     }
 
     private fun subscribeObservers() {
