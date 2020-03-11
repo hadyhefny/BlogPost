@@ -8,6 +8,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.animalfeed.R
 import com.hefny.hady.animalfeed.ui.BaseActivity
@@ -51,6 +52,10 @@ class MainActivity : BaseActivity(),
 
     private fun setupActionBar() {
         setSupportActionBar(tool_bar)
+    }
+
+    private fun expandAppBar() {
+        findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -99,7 +104,7 @@ class MainActivity : BaseActivity(),
     }
 
     override fun onGraphChange() {
-        // TODO("What needs to happen when the graph changes?")
+        expandAppBar()
     }
 
     override fun onReselectNavItem(navController: NavController, fragment: Fragment) =
