@@ -1,4 +1,4 @@
-package com.hefny.hady.animalfeed.api.network_reponses
+package com.hefny.hady.animalfeed.api.auth.network_reponses
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

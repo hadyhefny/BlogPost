@@ -1,8 +1,8 @@
-package com.hefny.hady.animalfeed.api
+package com.hefny.hady.animalfeed.api.auth
 
 import androidx.lifecycle.LiveData
-import com.hefny.hady.animalfeed.api.network_reponses.LoginResponse
-import com.hefny.hady.animalfeed.api.network_reponses.RegistrationResponse
+import com.hefny.hady.animalfeed.api.auth.network_reponses.LoginResponse
+import com.hefny.hady.animalfeed.api.auth.network_reponses.RegistrationResponse
 import com.hefny.hady.animalfeed.util.GenericApiResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded

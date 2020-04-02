@@ -2,16 +2,19 @@ package com.hefny.hady.animalfeed.ui.main.account
 
 import android.os.Bundle
 import android.view.*
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.animalfeed.R
-import com.hefny.hady.animalfeed.session.SessionManager
+import com.hefny.hady.animalfeed.viewmodels.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.fragment_account.*
 import javax.inject.Inject
 
 class AccountFragment : BaseAccountFragment() {
 
     @Inject
-    lateinit var sessionManager: SessionManager
+    lateinit var providerFactory: ViewModelProviderFactory
+
+    lateinit var viewModel: AccountViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,11 +27,14 @@ class AccountFragment : BaseAccountFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+        viewModel = activity?.run {
+            ViewModelProvider(this, providerFactory).get(AccountViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
         change_password.setOnClickListener {
             findNavController().navigate(R.id.action_accountFragment_to_changePasswordFragment)
         }
         logout_button.setOnClickListener {
-            sessionManager.logout()
+            viewModel.logout()
         }
     }
 

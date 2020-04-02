@@ -3,9 +3,9 @@ package com.hefny.hady.animalfeed.repository.auth
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.LiveData
-import com.hefny.hady.animalfeed.api.OpenApiAuthService
-import com.hefny.hady.animalfeed.api.network_reponses.LoginResponse
-import com.hefny.hady.animalfeed.api.network_reponses.RegistrationResponse
+import com.hefny.hady.animalfeed.api.auth.OpenApiAuthService
+import com.hefny.hady.animalfeed.api.auth.network_reponses.LoginResponse
+import com.hefny.hady.animalfeed.api.auth.network_reponses.RegistrationResponse
 import com.hefny.hady.animalfeed.models.AccountProperties
 import com.hefny.hady.animalfeed.models.AuthToken
 import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao

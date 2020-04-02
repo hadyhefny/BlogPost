@@ -1,7 +1,7 @@
 package com.hefny.hady.animalfeed.di.auth
 
 import android.content.SharedPreferences
-import com.hefny.hady.animalfeed.api.OpenApiAuthService
+import com.hefny.hady.animalfeed.api.auth.OpenApiAuthService
 import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao
 import com.hefny.hady.animalfeed.persistence.AuthTokenDao
 import com.hefny.hady.animalfeed.repository.auth.AuthRepository
