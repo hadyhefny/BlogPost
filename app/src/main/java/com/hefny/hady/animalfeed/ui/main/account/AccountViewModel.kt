@@ -20,7 +20,9 @@ constructor(
     override fun handleStateEvent(stateEvent: AccountStateEvent): LiveData<DataState<AccountViewState>> {
         return when (stateEvent) {
             is AccountStateEvent.GetAccountPropertiesEvent -> {
-                AbsentLiveData.create()
+                sessionManager.cachedToken.value?.let { authToken ->
+                    accountRepository.getAccountProperties(authToken)
+                } ?: AbsentLiveData.create()
             }
             is AccountStateEvent.UpdateAccountPropertiesEvent -> {
                 AbsentLiveData.create()
@@ -47,7 +49,7 @@ constructor(
         _viewState.value = update
     }
 
-    fun logout(){
+    fun logout() {
         sessionManager.logout()
     }
 
