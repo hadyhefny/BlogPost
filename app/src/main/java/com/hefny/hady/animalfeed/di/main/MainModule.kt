@@ -20,7 +20,7 @@ class MainModule {
 
     @MainScope
     @Provides
-    fun provideAccountProperties(
+    fun provideAccountRepository(
         openApiMainService: OpenApiMainService,
         accountPropertiesDao: AccountPropertiesDao,
         sessionManager: SessionManager

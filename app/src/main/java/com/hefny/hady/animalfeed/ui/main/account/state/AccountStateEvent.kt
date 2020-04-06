@@ -3,8 +3,8 @@ package com.hefny.hady.animalfeed.ui.main.account.state
 sealed class AccountStateEvent {
     class GetAccountPropertiesEvent() : AccountStateEvent()
     data class UpdateAccountPropertiesEvent(
-        val userName: String,
-        val password: String
+        val email: String,
+        val userName: String
     ) : AccountStateEvent()
 
     data class ChangePasswordEvent(

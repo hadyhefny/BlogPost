@@ -3,6 +3,7 @@ package com.hefny.hady.animalfeed.repository.main
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
+import com.hefny.hady.animalfeed.api.GenericResponse
 import com.hefny.hady.animalfeed.api.main.OpenApiMainService
 import com.hefny.hady.animalfeed.models.AccountProperties
 import com.hefny.hady.animalfeed.models.AuthToken
@@ -10,7 +11,10 @@ import com.hefny.hady.animalfeed.persistence.AccountPropertiesDao
 import com.hefny.hady.animalfeed.repository.NetworkBoundResource
 import com.hefny.hady.animalfeed.session.SessionManager
 import com.hefny.hady.animalfeed.ui.DataState
+import com.hefny.hady.animalfeed.ui.Response
+import com.hefny.hady.animalfeed.ui.ResponseType
 import com.hefny.hady.animalfeed.ui.main.account.state.AccountViewState
+import com.hefny.hady.animalfeed.util.AbsentLiveData
 import com.hefny.hady.animalfeed.util.ApiSuccessResponse
 import com.hefny.hady.animalfeed.util.GenericApiResponse
 import kotlinx.coroutines.Dispatchers.Main
@@ -31,9 +35,10 @@ constructor(
     fun getAccountProperties(authToken: AuthToken): LiveData<DataState<AccountViewState>> {
         return object :
             NetworkBoundResource<AccountProperties, AccountProperties, AccountViewState>(
-                sessionManager.isConnectedToTheInternet(),
-                true,
-                true
+                isNetworkAvailable = sessionManager.isConnectedToTheInternet(),
+                isNetworkRequest = true,
+                shouldCancelIfNoInternet = false,
+                shouldLoadFromCache = true
             ) {
             override suspend fun createCacheRequestAndReturn() {
                 withContext(Main) {
@@ -80,6 +85,59 @@ constructor(
                     )
                 }
             }
+        }.asLiveData()
+    }
+
+    fun saveAccountProperties(
+        authToken: AuthToken,
+        accountProperties: AccountProperties
+    ): LiveData<DataState<AccountViewState>> {
+        return object : NetworkBoundResource<GenericResponse, Any, AccountViewState>(
+            isNetworkAvailable = sessionManager.isConnectedToTheInternet(),
+            isNetworkRequest = true,
+            shouldCancelIfNoInternet = true,
+            shouldLoadFromCache = false
+        ) {
+            // not used in this case
+            override suspend fun createCacheRequestAndReturn() {
+            }
+
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<GenericResponse>) {
+                updateLocalDb(null)
+                onCompleteJob(
+                    DataState.data(
+                        data = null,
+                        response = Response(response.body.response, ResponseType.Toast())
+                    )
+                )
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<GenericResponse>> {
+                return openApiMainService.updateAccountProperties(
+                    "Token ${authToken.token}",
+                    accountProperties.email,
+                    accountProperties.username
+                )
+            }
+
+            // not used in this case
+            override fun loadFromCache(): LiveData<AccountViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+                accountPropertiesDao.updateAccountProperties(
+                    accountProperties.email,
+                    accountProperties.username,
+                    authToken.account_pk!!
+                )
+            }
+
+            override fun setJob(job: Job) {
+                repositoryJob?.cancel()
+                repositoryJob = job
+            }
+
         }.asLiveData()
     }
 

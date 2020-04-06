@@ -41,9 +41,10 @@ constructor(
             return returnErrorResponse(loginFieldsError, ResponseType.Dialog())
         }
         return object : NetworkBoundResource<LoginResponse, Any, AuthViewState>(
-            sessionManager.isConnectedToTheInternet(),
-            true,
-            false
+            isNetworkAvailable = sessionManager.isConnectedToTheInternet(),
+            isNetworkRequest = true,
+            shouldCancelIfNoInternet = true,
+            shouldLoadFromCache = false
         ) {
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<LoginResponse>) {
                 Log.d(TAG, "handleApiSuccessResponse: ${response.body.response}")
@@ -129,9 +130,10 @@ constructor(
             return returnErrorResponse(registrationError, ResponseType.Dialog())
         }
         return object : NetworkBoundResource<RegistrationResponse, Any, AuthViewState>(
-            sessionManager.isConnectedToTheInternet(),
-            true,
-            false
+            isNetworkAvailable = sessionManager.isConnectedToTheInternet(),
+            isNetworkRequest = true,
+            shouldCancelIfNoInternet = true,
+            shouldLoadFromCache = false
         ) {
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<RegistrationResponse>) {
                 Log.d(TAG, "handleApiSuccessResponse: ${response.body}")
@@ -218,9 +220,10 @@ constructor(
             return returnNoTokenFound()
         } else {
             return object : NetworkBoundResource<Void, Any, AuthViewState>(
-                sessionManager.isConnectedToTheInternet(),
-                false,
-                false
+                isNetworkAvailable = sessionManager.isConnectedToTheInternet(),
+                isNetworkRequest = false,
+                shouldCancelIfNoInternet = false,
+                shouldLoadFromCache = false
             ) {
                 override suspend fun createCacheRequestAndReturn() {
                     accountPropertiesDao.searchByEmail(previousAuthUserEmail)
