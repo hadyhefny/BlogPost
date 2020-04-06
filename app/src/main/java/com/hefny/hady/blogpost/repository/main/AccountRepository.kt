@@ -103,8 +103,9 @@ constructor(
             }
 
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<GenericResponse>) {
-                updateLocalDb(null)
+                updateLocalDb(null) // the update doesn't return a cache object
                 withContext(Main) {
+                    // finish with success response
                     onCompleteJob(
                         DataState.data(
                             data = null,
