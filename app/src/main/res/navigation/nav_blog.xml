@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/blogFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.blog.BlogFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.blog.BlogFragment"
         android:label="@string/fragment_blog"
         tools:layout="@layout/fragment_blog" >
         <action
@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/viewBlogFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.blog.ViewBlogFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.blog.ViewBlogFragment"
         android:label="@string/fragment_view_blog"
         tools:layout="@layout/fragment_view_blog" >
         <action
@@ -42,7 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/updateBlogFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.blog.UpdateBlogFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.blog.UpdateBlogFragment"
         android:label="@string/fragment_update_blog"
         tools:layout="@layout/fragment_update_blog" >
         <action

@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/accountFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.account.AccountFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.account.AccountFragment"
         android:label="@string/fragment_account"
         tools:layout="@layout/fragment_account" >
         <action
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/updateAccountFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.account.UpdateAccountFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.account.UpdateAccountFragment"
         android:label="@string/fragment_update_account"
         tools:layout="@layout/fragment_update_account" >
         <action
@@ -42,7 +42,7 @@
     </fragment>
     <fragment
         android:id="@+id/changePasswordFragment"
-        android:name="com.hefny.hady.animalfeed.ui.main.account.ChangePasswordFragment"
+        android:name="com.hefny.hady.blogpost.ui.main.account.ChangePasswordFragment"
         android:label="@string/fragment_change_password"
         tools:layout="@layout/fragment_change_password" >
         <action
