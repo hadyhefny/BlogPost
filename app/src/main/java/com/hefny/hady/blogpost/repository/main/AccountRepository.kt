@@ -104,12 +104,14 @@ constructor(
 
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<GenericResponse>) {
                 updateLocalDb(null)
-                onCompleteJob(
-                    DataState.data(
-                        data = null,
-                        response = Response(response.body.response, ResponseType.Toast())
+                withContext(Main) {
+                    onCompleteJob(
+                        DataState.data(
+                            data = null,
+                            response = Response(response.body.response, ResponseType.Toast())
+                        )
                     )
-                )
+                }
             }
 
             override fun createCall(): LiveData<GenericApiResponse<GenericResponse>> {
