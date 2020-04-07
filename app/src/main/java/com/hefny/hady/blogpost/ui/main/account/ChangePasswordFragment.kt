@@ -47,6 +47,7 @@ class ChangePasswordFragment : BaseAccountFragment() {
                                     SuccessHandling.RESPONSE_PASSWORD_UPDATE_SUCCESS
                                 )
                         ) {
+                            keyboardManagement.hideSoftKeyboard()
                             findNavController().popBackStack()
                         }
                     }

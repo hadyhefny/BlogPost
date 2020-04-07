@@ -11,6 +11,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
+import com.hefny.hady.blogpost.ui.KeyboardManagement
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
@@ -23,6 +24,7 @@ abstract class BaseAccountFragment : DaggerFragment() {
 
     lateinit var viewModel: AccountViewModel
     lateinit var stateChangeListener: DataStateChangeListener
+    lateinit var keyboardManagement: KeyboardManagement
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,6 +49,11 @@ abstract class BaseAccountFragment : DaggerFragment() {
             stateChangeListener = context as DataStateChangeListener
         } catch (e: ClassCastException) {
             Log.e(TAG, "$context must implement DataStateChangeListener")
+        }
+        try {
+            keyboardManagement = context as KeyboardManagement
+        } catch (e: ClassCastException) {
+            Log.e(TAG, "$context must implement KeyboardManagementInterface")
         }
     }
 }

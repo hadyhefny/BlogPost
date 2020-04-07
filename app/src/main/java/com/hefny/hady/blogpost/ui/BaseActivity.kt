@@ -1,6 +1,8 @@
 package com.hefny.hady.blogpost.ui
 
+import android.content.Context
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import com.hefny.hady.blogpost.session.SessionManager
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers.Main
@@ -8,7 +10,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener {
+abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener,
+    KeyboardManagement {
     val TAG = "AppDebug"
 
     @Inject
@@ -71,6 +74,15 @@ abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener
                     }
                 }
             }
+        }
+    }
+
+    override fun hideSoftKeyboard() {
+        if (currentFocus != null) {
+            val inputMethodManager = getSystemService(
+                Context.INPUT_METHOD_SERVICE
+            ) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         }
     }
 
