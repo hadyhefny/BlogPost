@@ -10,6 +10,7 @@ import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
 import com.hefny.hady.blogpost.persistence.AuthTokenDao
+import com.hefny.hady.blogpost.repository.JobManager
 import com.hefny.hady.blogpost.repository.NetworkBoundResource
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.DataState
@@ -31,7 +32,7 @@ constructor(
     val sessionManager: SessionManager,
     val sharedPreferences: SharedPreferences,
     val editor: SharedPreferences.Editor
-) {
+) : JobManager("AuthRepository") {
     private val TAG = "AppDebug"
     private var repositoryJob: Job? = null
     fun attemptLogin(email: String, password: String): LiveData<DataState<AuthViewState>> {
@@ -93,8 +94,7 @@ constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("attemptLogin", job)
             }
 
             // not used in this case
@@ -193,8 +193,7 @@ constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("attemptRegister", job)
             }
 
             // not used in this case
@@ -263,8 +262,7 @@ constructor(
                 }
 
                 override fun setJob(job: Job) {
-                    repositoryJob?.cancel()
-                    repositoryJob = job
+                    addJob("checkPreviousAuthUser", job)
                 }
 
                 // not used in this case
@@ -311,10 +309,5 @@ constructor(
                 )
             }
         }
-    }
-
-    fun cancelActiveJobs() {
-        Log.d(TAG, "AuthRepository: canceling ongoing jobs")
-        repositoryJob?.cancel()
     }
 }

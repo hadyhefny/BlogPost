@@ -47,7 +47,12 @@ constructor(
                 } ?: AbsentLiveData.create()
             }
             is AccountStateEvent.None -> {
-                AbsentLiveData.create()
+                object : LiveData<DataState<AccountViewState>>() {
+                    override fun onActive() {
+                        super.onActive()
+                        value = DataState.data(null, null)
+                    }
+                }
             }
         }
     }
@@ -69,4 +74,18 @@ constructor(
         sessionManager.logout()
     }
 
+    fun cancelActiveJobs() {
+        handlePendingJobs()
+        accountRepository.cancelActiveJobs()
+    }
+
+    // hide progress bar
+    private fun handlePendingJobs() {
+        setStateEvent(AccountStateEvent.None())
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelActiveJobs()
+    }
 }

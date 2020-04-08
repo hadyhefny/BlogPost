@@ -13,10 +13,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.AuthActivity
+import com.hefny.hady.blogpost.ui.main.account.BaseAccountFragment
 import com.hefny.hady.blogpost.ui.main.account.ChangePasswordFragment
 import com.hefny.hady.blogpost.ui.main.account.UpdateAccountFragment
+import com.hefny.hady.blogpost.ui.main.blog.BaseBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.UpdateBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.ViewBlogFragment
+import com.hefny.hady.blogpost.ui.main.create_blog.BaseCreateBlogFragment
 import com.hefny.hady.blogpost.util.BottomNavController
 import com.hefny.hady.blogpost.util.BottomNavController.*
 import com.hefny.hady.blogpost.util.setUpNavigation
@@ -105,6 +108,24 @@ class MainActivity : BaseActivity(),
 
     override fun onGraphChange() {
         expandAppBar()
+        cancelActiveJobs()
+    }
+
+    private fun cancelActiveJobs() {
+        val fragments = bottomNavController.fragmentManager
+            .findFragmentById(bottomNavController.containerId)
+            ?.childFragmentManager
+            ?.fragments
+        if (fragments != null) {
+            for (fragment in fragments) {
+                when (fragment) {
+                    is BaseAccountFragment -> fragment.cancelActiveJobs()
+                    is BaseBlogFragment -> fragment.cancelActiveJobs()
+                    is BaseCreateBlogFragment -> fragment.cancelActiveJobs()
+                }
+            }
+        }
+        displayProgressBar(false)
     }
 
     override fun onReselectNavItem(navController: NavController, fragment: Fragment) =

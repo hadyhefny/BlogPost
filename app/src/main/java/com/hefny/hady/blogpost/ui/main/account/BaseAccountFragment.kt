@@ -32,6 +32,11 @@ abstract class BaseAccountFragment : DaggerFragment() {
             ViewModelProvider(this, providerFactory).get(AccountViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
         setupActionBarWithNavController(R.id.accountFragment, activity as AppCompatActivity)
+        cancelActiveJobs()
+    }
+
+    fun cancelActiveJobs() {
+        viewModel.cancelActiveJobs()
     }
 
     fun setupActionBarWithNavController(fragmentId: Int, activity: AppCompatActivity) {

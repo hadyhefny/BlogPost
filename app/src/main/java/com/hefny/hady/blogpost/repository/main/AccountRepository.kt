@@ -1,6 +1,5 @@
 package com.hefny.hady.blogpost.repository.main
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.hefny.hady.blogpost.api.GenericResponse
@@ -8,6 +7,7 @@ import com.hefny.hady.blogpost.api.main.OpenApiMainService
 import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
+import com.hefny.hady.blogpost.repository.JobManager
 import com.hefny.hady.blogpost.repository.NetworkBoundResource
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.DataState
@@ -28,7 +28,7 @@ constructor(
     val openApiMainService: OpenApiMainService,
     val accountPropertiesDao: AccountPropertiesDao,
     val sessionManager: SessionManager
-) {
+) : JobManager("AccountRepository") {
     private val TAG = "AppDebug"
     private var repositoryJob: Job? = null
 
@@ -61,8 +61,7 @@ constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("getAccountProperties", job)
             }
 
             override fun loadFromCache(): LiveData<AccountViewState> {
@@ -137,8 +136,7 @@ constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("saveAccountProperties", job)
             }
 
         }.asLiveData()
@@ -191,14 +189,8 @@ constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("updatePassword", job)
             }
         }.asLiveData()
-    }
-
-    fun cancelActiveJobs() {
-        Log.d(TAG, "AccountRepository: canceling on-going jobs...")
-        repositoryJob?.cancel()
     }
 }

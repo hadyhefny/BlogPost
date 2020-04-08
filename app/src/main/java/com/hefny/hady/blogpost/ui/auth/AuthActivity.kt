@@ -6,9 +6,6 @@ import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.findNavController
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.state.AuthStateEvent
@@ -18,7 +15,7 @@ import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 
-class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener {
+class AuthActivity : BaseActivity() {
 
     @Inject
     lateinit var providerFactory: ViewModelProviderFactory
@@ -29,8 +26,11 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
         viewModel = ViewModelProvider(this, providerFactory).get(AuthViewModel::class.java)
-        findNavController(R.id.auth_nav_host_fragment).addOnDestinationChangedListener(this)
         subscribeObservers()
+    }
+
+    override fun onResume() {
+        super.onResume()
         checkPreviousAuthUser()
     }
 
@@ -42,17 +42,18 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
 
         viewModel.dataState.observe(this, Observer { dataState ->
             onDataStateChange(dataState)
-            dataState.data?.let { data ->
-                data.data?.let { event ->
-                    event.getContentIfNotHandled()?.let {
-                        it.authToken?.let {
-                            Log.d(TAG, "AuthActivity, DataState: $it")
-                            viewModel.setAuthToken(it)
+            if (dataState != null) {
+                dataState.data?.let { data ->
+                    data.data?.let { event ->
+                        event.getContentIfNotHandled()?.let {
+                            it.authToken?.let {
+                                Log.d(TAG, "AuthActivity, DataState: $it")
+                                viewModel.setAuthToken(it)
+                            }
                         }
                     }
                 }
             }
-
         })
 
         viewModel.viewState.observe(this, Observer
@@ -78,14 +79,6 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener 
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
-    }
-
-    override fun onDestinationChanged(
-        controller: NavController,
-        destination: NavDestination,
-        arguments: Bundle?
-    ) {
-        viewModel.cancelActiveJobs()
     }
 
     override fun displayProgressBar(loading: Boolean) {
