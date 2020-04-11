@@ -24,7 +24,12 @@ constructor(
     override fun handleStateEvent(stateEvent: BlogStateEvent): LiveData<DataState<BlogViewState>> {
         return when (stateEvent) {
             is BlogStateEvent.BlogSearchEvent -> {
-                AbsentLiveData.create()
+                sessionManager.cachedToken.value?.let { authToken ->
+                    blogRepository.searchBlogPosts(
+                        authToken,
+                        viewState.value!!.blogFields.searchQuery
+                    )
+                } ?: AbsentLiveData.create()
             }
             is BlogStateEvent.None -> {
                 AbsentLiveData.create()
@@ -38,9 +43,6 @@ constructor(
 
     fun setQuery(query: String) {
         val update = getCurrentViewStateOrNew()
-        if (update.blogFields.searchQuery == query) {
-            return
-        }
         update.blogFields.searchQuery = query
         _viewState.value = update
     }

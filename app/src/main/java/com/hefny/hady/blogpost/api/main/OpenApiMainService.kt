@@ -2,6 +2,7 @@ package com.hefny.hady.blogpost.api.main
 
 import androidx.lifecycle.LiveData
 import com.hefny.hady.blogpost.api.GenericResponse
+import com.hefny.hady.blogpost.api.main.responses.BlogListSearchResponse
 import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.util.GenericApiResponse
 import retrofit2.http.*
@@ -28,4 +29,10 @@ interface OpenApiMainService {
         @Field("new_password") newPassword: String,
         @Field("confirm_new_password") confirmNewPassword: String
     ): LiveData<GenericApiResponse<GenericResponse>>
+
+    @GET("blog/list")
+    fun getAllBlogPosts(
+        @Header("Authorization") authorization: String,
+        @Query("search") query: String
+    ): LiveData<GenericApiResponse<BlogListSearchResponse>>
 }
