@@ -90,5 +90,7 @@ dependencies {
     def glide_version = "4.11.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
-
+    // leak Canary
+    def leak_canary_version = 2.2
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leak_canary_version"
 }
