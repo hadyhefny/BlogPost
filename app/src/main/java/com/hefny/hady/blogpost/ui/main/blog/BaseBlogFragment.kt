@@ -12,6 +12,7 @@ import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject

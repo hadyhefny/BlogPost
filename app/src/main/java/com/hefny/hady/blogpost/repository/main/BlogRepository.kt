@@ -14,6 +14,7 @@ import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.DataState
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.util.ApiSuccessResponse
+import com.hefny.hady.blogpost.util.Constants
 import com.hefny.hady.blogpost.util.DateUtils
 import com.hefny.hady.blogpost.util.GenericApiResponse
 import kotlinx.coroutines.Dispatchers.IO
@@ -34,7 +35,8 @@ constructor(
 
     fun searchBlogPosts(
         authToken: AuthToken,
-        query: String
+        query: String,
+        page: Int
     ): LiveData<DataState<BlogViewState>> {
         return object : NetworkBoundResource<BlogListSearchResponse, List<BlogPost>, BlogViewState>(
             sessionManager.isConnectedToTheInternet(),
@@ -46,6 +48,10 @@ constructor(
                 withContext(Main) {
                     // finish by viewing the cache
                     result.addSource(loadFromCache()) { viewState ->
+                        viewState.blogFields.isQueryInProgress = false
+                        if (page * Constants.PAGINATION_PAGE_SIZE > viewState.blogFields.blogList.size) {
+                            viewState.blogFields.isQueryExhausted = true
+                        }
                         onCompleteJob(DataState.data(viewState))
                     }
                 }
@@ -73,16 +79,27 @@ constructor(
             override fun createCall(): LiveData<GenericApiResponse<BlogListSearchResponse>> {
                 return openApiMainService.getAllBlogPosts(
                     "Token ${authToken.token}",
-                    query
+                    query,
+                    page
                 )
             }
 
             override fun loadFromCache(): LiveData<BlogViewState> {
-                return Transformations.switchMap(blogPostDao.searchBlogPosts()) {
+                return Transformations.switchMap(
+                    blogPostDao.searchBlogPosts(
+                        query,
+                        page
+                    )
+                ) {
                     object : LiveData<BlogViewState>() {
                         override fun onActive() {
                             super.onActive()
-                            value = BlogViewState(BlogViewState.BlogFields(it))
+                            value = BlogViewState(
+                                BlogViewState.BlogFields(
+                                    blogList = it,
+                                    isQueryInProgress = true
+                                )
+                            )
                         }
                     }
                 }
