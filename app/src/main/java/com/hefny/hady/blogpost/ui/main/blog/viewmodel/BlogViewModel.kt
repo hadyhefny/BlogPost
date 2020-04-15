@@ -1,8 +1,9 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.LiveData
-import com.bumptech.glide.RequestManager
+import com.hefny.hady.blogpost.persistence.BlogQueryUtils
 import com.hefny.hady.blogpost.repository.main.BlogRepository
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.BaseViewModel
@@ -11,6 +12,7 @@ import com.hefny.hady.blogpost.ui.Loading
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.util.AbsentLiveData
+import com.hefny.hady.blogpost.util.PreferenceKeys
 import javax.inject.Inject
 
 class BlogViewModel
@@ -19,8 +21,32 @@ constructor(
     private val sessionManager: SessionManager,
     private val blogRepository: BlogRepository,
     private val sharedPreferences: SharedPreferences,
-    private val requestManager: RequestManager
+    private val editor: SharedPreferences.Editor
 ) : BaseViewModel<BlogStateEvent, BlogViewState>() {
+    init {
+        setBLogFilter(
+            sharedPreferences.getString(
+                PreferenceKeys.BLOG_FILTER,
+                BlogQueryUtils.BLOG_FILTER_DATE_UPDATED
+            )
+        )
+        setBLogOrder(
+            sharedPreferences.getString(
+                PreferenceKeys.BLOG_ORDER,
+                BlogQueryUtils.BLOG_ORDER_DESC
+            )!!
+        )
+        Log.d(
+            TAG, "BlogViewModel: ${sharedPreferences.getString(
+                PreferenceKeys.BLOG_ORDER,
+                BlogQueryUtils.BLOG_ORDER_DESC
+            )!! + sharedPreferences.getString(
+                PreferenceKeys.BLOG_FILTER,
+                BlogQueryUtils.BLOG_FILTER_DATE_UPDATED
+            )}"
+        )
+    }
+
     override fun handleStateEvent(stateEvent: BlogStateEvent): LiveData<DataState<BlogViewState>> {
         return when (stateEvent) {
             is BlogStateEvent.BlogSearchEvent -> {
@@ -28,6 +54,7 @@ constructor(
                     blogRepository.searchBlogPosts(
                         authToken = authToken,
                         query = getSearchQuery(),
+                        filterAndOrder = getOrder() + getFilter(),
                         page = getPage()
                     )
                 } ?: AbsentLiveData.create()
@@ -52,6 +79,14 @@ constructor(
 
     override fun initNewViewState(): BlogViewState {
         return BlogViewState()
+    }
+
+    fun saveFilterOptions(filter: String, order: String) {
+        editor.putString(PreferenceKeys.BLOG_FILTER, filter)
+        editor.apply()
+
+        editor.putString(PreferenceKeys.BLOG_ORDER, order)
+        editor.apply()
     }
 
     fun cancelActiveJobs() {

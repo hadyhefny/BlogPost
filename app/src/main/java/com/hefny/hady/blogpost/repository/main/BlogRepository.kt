@@ -8,6 +8,7 @@ import com.hefny.hady.blogpost.api.main.responses.BlogListSearchResponse
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.persistence.BlogPostDao
+import com.hefny.hady.blogpost.persistence.returnOrderedBlogQuery
 import com.hefny.hady.blogpost.repository.JobManager
 import com.hefny.hady.blogpost.repository.NetworkBoundResource
 import com.hefny.hady.blogpost.session.SessionManager
@@ -36,6 +37,7 @@ constructor(
     fun searchBlogPosts(
         authToken: AuthToken,
         query: String,
+        filterAndOrder: String,
         page: Int
     ): LiveData<DataState<BlogViewState>> {
         return object : NetworkBoundResource<BlogListSearchResponse, List<BlogPost>, BlogViewState>(
@@ -77,18 +79,21 @@ constructor(
             }
 
             override fun createCall(): LiveData<GenericApiResponse<BlogListSearchResponse>> {
+                Log.d(TAG, "BlogRepository, createCall: $filterAndOrder")
                 return openApiMainService.getAllBlogPosts(
                     "Token ${authToken.token}",
                     query,
+                    filterAndOrder,
                     page
                 )
             }
 
             override fun loadFromCache(): LiveData<BlogViewState> {
                 return Transformations.switchMap(
-                    blogPostDao.searchBlogPosts(
-                        query,
-                        page
+                    blogPostDao.returnOrderedBlogQuery(
+                        query = query,
+                        filterAndOrder = filterAndOrder,
+                        page = page
                     )
                 ) {
                     object : LiveData<BlogViewState>() {
