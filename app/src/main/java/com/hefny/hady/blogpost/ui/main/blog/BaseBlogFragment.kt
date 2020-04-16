@@ -11,6 +11,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.ui.AppbarManagement
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
 import com.hefny.hady.blogpost.ui.KeyboardManagement
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
@@ -32,6 +33,8 @@ abstract class BaseBlogFragment : DaggerFragment() {
     lateinit var stateChangeListener: DataStateChangeListener
 
     lateinit var keyboardManagement: KeyboardManagement
+
+    lateinit var appbarManagement: AppbarManagement
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -66,6 +69,11 @@ abstract class BaseBlogFragment : DaggerFragment() {
             keyboardManagement = context as KeyboardManagement
         } catch (e: ClassCastException) {
             Log.e(TAG, "$context must implement KeyboardManagementInterface")
+        }
+        try {
+            appbarManagement = context as AppbarManagement
+        } catch (e: ClassCastException) {
+            Log.d(TAG, "$context must implement AppbarManagement")
         }
     }
 }

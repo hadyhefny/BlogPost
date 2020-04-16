@@ -3,6 +3,8 @@ package com.hefny.hady.blogpost.ui
 import android.content.Context
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import com.google.android.material.appbar.AppBarLayout
+import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.session.SessionManager
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers.Main
@@ -11,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener,
-    KeyboardManagement {
+    KeyboardManagement, AppbarManagement {
     val TAG = "AppDebug"
 
     @Inject
@@ -84,6 +86,10 @@ abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener
             ) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         }
+    }
+
+    override fun expandAppBar() {
+        findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
     }
 
     abstract fun displayProgressBar(loading: Boolean)

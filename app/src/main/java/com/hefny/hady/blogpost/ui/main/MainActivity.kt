@@ -57,10 +57,6 @@ class MainActivity : BaseActivity(),
         setSupportActionBar(tool_bar)
     }
 
-    private fun expandAppBar() {
-        findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> onBackPressed()
