@@ -25,7 +25,7 @@ class ViewBlogFragment : BaseBlogFragment() {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-        appbarManagement.expandAppBar()
+        appbarManagement.expandAppBar(R.id.app_bar)
         checkIfAuthorOfBlogPost()
     }
 

@@ -8,7 +8,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.BaseActivity
@@ -103,7 +102,7 @@ class MainActivity : BaseActivity(),
     }
 
     override fun onGraphChange() {
-        expandAppBar()
+        expandAppBar(R.id.app_bar)
         cancelActiveJobs()
     }
 

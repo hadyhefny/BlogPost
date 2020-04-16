@@ -88,8 +88,8 @@ abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener
         }
     }
 
-    override fun expandAppBar() {
-        findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
+    override fun expandAppBar(appbarId: Int) {
+        findViewById<AppBarLayout>(appbarId).setExpanded(true)
     }
 
     abstract fun displayProgressBar(loading: Boolean)

@@ -1,5 +1,5 @@
 package com.hefny.hady.blogpost.ui
 
 interface AppbarManagement {
-    fun expandAppBar()
+    fun expandAppBar(appbarId: Int)
 }
