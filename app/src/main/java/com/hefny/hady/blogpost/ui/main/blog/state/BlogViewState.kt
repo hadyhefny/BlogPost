@@ -16,8 +16,8 @@ data class BlogViewState(
         var page: Int = 1,
         var isQueryInProgress: Boolean = false,
         var isQueryExhausted: Boolean = false,
-        var filter: String = BlogQueryUtils.ORDER_BY_DESC_DATE_UPDATED,
-        var order: String = BlogQueryUtils.BLOG_ORDER_DESC
+        var filter: String = BlogQueryUtils.ORDER_BY_ASC_DATE_UPDATED,
+        var order: String = BlogQueryUtils.BLOG_ORDER_ASC
     )
 
     data class ViewBlogFields(

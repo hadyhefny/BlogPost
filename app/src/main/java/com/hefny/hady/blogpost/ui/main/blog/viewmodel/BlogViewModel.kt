@@ -33,13 +33,13 @@ constructor(
         setBLogOrder(
             sharedPreferences.getString(
                 PreferenceKeys.BLOG_ORDER,
-                BlogQueryUtils.BLOG_ORDER_DESC
+                BlogQueryUtils.BLOG_ORDER_ASC
             )!!
         )
         Log.d(
             TAG, "BlogViewModel: ${sharedPreferences.getString(
                 PreferenceKeys.BLOG_ORDER,
-                BlogQueryUtils.BLOG_ORDER_DESC
+                BlogQueryUtils.BLOG_ORDER_ASC
             )!! + sharedPreferences.getString(
                 PreferenceKeys.BLOG_FILTER,
                 BlogQueryUtils.BLOG_FILTER_DATE_UPDATED

@@ -21,33 +21,33 @@ fun BlogPostDao.returnOrderedBlogQuery(
     filterAndOrder: String,
     page: Int
 ): LiveData<List<BlogPost>> {
-    return when {
-        filterAndOrder.contains(BlogQueryUtils.ORDER_BY_ASC_DATE_UPDATED) -> {
+    return when (filterAndOrder) {
+        BlogQueryUtils.ORDER_BY_ASC_DATE_UPDATED -> {
             searchBlogPostsOrderByDateASC(
                 query = query,
                 page = page
             )
         }
-        filterAndOrder.contains(BlogQueryUtils.ORDER_BY_DESC_DATE_UPDATED) -> {
+        BlogQueryUtils.ORDER_BY_DESC_DATE_UPDATED -> {
             searchBlogPostsOrderByDateDESC(
                 query = query,
                 page = page
             )
         }
-        filterAndOrder.contains(BlogQueryUtils.ORDER_BY_ASC_USERNAME) -> {
+        BlogQueryUtils.ORDER_BY_ASC_USERNAME -> {
             searchBlogPostsOrderByAuthorASC(
                 query = query,
                 page = page
             )
         }
-        filterAndOrder.contains(BlogQueryUtils.ORDER_BY_DESC_USERNAME) -> {
+        BlogQueryUtils.ORDER_BY_DESC_USERNAME -> {
             searchBlogPostsOrderByAuthorDESC(
                 query = query,
                 page = page
             )
         }
         else -> {
-            searchBlogPostsOrderByDateDESC(
+            searchBlogPostsOrderByDateASC(
                 query = query,
                 page = page
             )
