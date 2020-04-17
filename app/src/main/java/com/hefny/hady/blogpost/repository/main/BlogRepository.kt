@@ -14,6 +14,8 @@ import com.hefny.hady.blogpost.repository.JobManager
 import com.hefny.hady.blogpost.repository.NetworkBoundResource
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.DataState
+import com.hefny.hady.blogpost.ui.Response
+import com.hefny.hady.blogpost.ui.ResponseType
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.util.*
 import kotlinx.coroutines.Dispatchers.IO
@@ -188,6 +190,68 @@ constructor(
 
             override fun setJob(job: Job) {
                 addJob("isAuthorOfBlogPost", job)
+            }
+
+        }.asLiveData()
+    }
+
+    fun deleteBlogPost(
+        authToken: AuthToken,
+        blogPost: BlogPost
+    ): LiveData<DataState<BlogViewState>> {
+        return object : NetworkBoundResource<GenericResponse, BlogPost, BlogViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            true,
+            true,
+            false
+        ) {
+            // not used in this case
+            override suspend fun createCacheRequestAndReturn() {
+            }
+
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<GenericResponse>) {
+                if (response.body.response == SuccessHandling.SUCCESS_BLOG_DELETED) {
+                    updateLocalDb(blogPost)
+                } else {
+                    onCompleteJob(
+                        DataState.error(
+                            Response(
+                                message = ErrorHandling.ERROR_UNKNOWN,
+                                responseType = ResponseType.Dialog()
+                            )
+                        )
+                    )
+                }
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<GenericResponse>> {
+                return openApiMainService.deleteBlogPost(
+                    "Token ${authToken.token}",
+                    blogPost.slug
+                )
+            }
+
+            // not used in this case
+            override fun loadFromCache(): LiveData<BlogViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: BlogPost?) {
+                cacheObject?.let { blogPost ->
+                    blogPostDao.deleteBlogPost(blogPost)
+                    onCompleteJob(
+                        DataState.data(
+                            data = null,
+                            response = Response(
+                                SuccessHandling.SUCCESS_BLOG_DELETED, ResponseType.Toast()
+                            )
+                        )
+                    )
+                }
+            }
+
+            override fun setJob(job: Job) {
+                addJob("deleteBlogPost", job)
             }
 
         }.asLiveData()

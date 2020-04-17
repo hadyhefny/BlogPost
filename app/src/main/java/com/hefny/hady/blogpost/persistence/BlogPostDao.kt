@@ -1,10 +1,7 @@
 package com.hefny.hady.blogpost.persistence
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.util.Constants.Companion.PAGINATION_PAGE_SIZE
 
@@ -12,6 +9,9 @@ import com.hefny.hady.blogpost.util.Constants.Companion.PAGINATION_PAGE_SIZE
 interface BlogPostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(blogPost: BlogPost): Long
+
+    @Delete
+    suspend fun deleteBlogPost(blogPost: BlogPost)
 
     @Query(
         """

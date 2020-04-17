@@ -1,5 +1,7 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
+import com.hefny.hady.blogpost.models.BlogPost
+
 fun BlogViewModel.getSearchQuery(): String {
     getCurrentViewStateOrNew().let {
         return it.blogFields.searchQuery
@@ -49,4 +51,16 @@ fun BlogViewModel.getSlug(): String {
         }
     }
     return ""
+}
+
+fun BlogViewModel.getBlogPost(): BlogPost {
+    getCurrentViewStateOrNew().let {
+        return it.viewBlogFields.blogPost?.let {
+            return it
+        } ?: getDummyBlogPost()
+    }
+}
+
+fun getDummyBlogPost(): BlogPost {
+    return BlogPost(1, "", "", "", "", 1, "")
 }
