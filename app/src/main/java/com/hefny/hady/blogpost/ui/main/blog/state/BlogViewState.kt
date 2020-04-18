@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.ui.main.blog.state
 
+import android.net.Uri
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.persistence.BlogQueryUtils
 
@@ -8,7 +9,10 @@ data class BlogViewState(
     var blogFields: BlogFields = BlogFields(),
 
     // ViewBlogFragment vars
-    var viewBlogFields: ViewBlogFields = ViewBlogFields()
+    var viewBlogFields: ViewBlogFields = ViewBlogFields(),
+
+    // UpdateBlogFragment
+    var updateBlogFields: UpdateBlogFields = UpdateBlogFields()
 ) {
     data class BlogFields(
         var blogList: List<BlogPost> = ArrayList(),
@@ -23,5 +27,11 @@ data class BlogViewState(
     data class ViewBlogFields(
         var blogPost: BlogPost? = null,
         var isAuthorOfBlogPost: Boolean = false
+    )
+
+    data class UpdateBlogFields(
+        var updateBlogTitle: String? = null,
+        var updatedBlogBody: String? = null,
+        var updateBlogImage: Uri? = null
     )
 }

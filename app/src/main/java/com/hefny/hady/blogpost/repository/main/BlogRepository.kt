@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.hefny.hady.blogpost.api.GenericResponse
 import com.hefny.hady.blogpost.api.main.OpenApiMainService
+import com.hefny.hady.blogpost.api.main.responses.BlogCreateUpdateResponse
 import com.hefny.hady.blogpost.api.main.responses.BlogListSearchResponse
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.models.BlogPost
@@ -23,6 +24,8 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 class BlogRepository
@@ -254,6 +257,81 @@ constructor(
                 addJob("deleteBlogPost", job)
             }
 
+        }.asLiveData()
+    }
+
+    fun updateBlogFields(
+        authToken: AuthToken,
+        slug: String,
+        title: RequestBody,
+        body: RequestBody,
+        image: MultipartBody.Part?
+    ): LiveData<DataState<BlogViewState>> {
+        return object : NetworkBoundResource<BlogCreateUpdateResponse, BlogPost, BlogViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            true,
+            true,
+            false
+        ) {
+            // not used in this case
+            override suspend fun createCacheRequestAndReturn() {
+            }
+
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<BlogCreateUpdateResponse>) {
+                val updatedBlogPost = BlogPost(
+                    response.body.pk,
+                    response.body.title,
+                    response.body.slug,
+                    response.body.body,
+                    response.body.image,
+                    DateUtils.convertServerStringDateToLong(response.body.date_updated),
+                    response.body.username
+                )
+                updateLocalDb(updatedBlogPost)
+                withContext(Main) {
+                    onCompleteJob(
+                        DataState.data(
+                            data = BlogViewState(
+                                viewBlogFields = BlogViewState.ViewBlogFields(updatedBlogPost)
+                            ),
+                            response = Response(
+                                message = response.body.response,
+                                responseType = ResponseType.Toast()
+                            )
+                        )
+                    )
+                }
+            }
+
+            override fun createCall(): LiveData<GenericApiResponse<BlogCreateUpdateResponse>> {
+                return openApiMainService.updateBlogPost(
+                    "Token ${authToken.token}",
+                    slug,
+                    title,
+                    body,
+                    image
+                )
+            }
+
+            // not used in this case
+            override fun loadFromCache(): LiveData<BlogViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: BlogPost?) {
+                cacheObject?.let { blogPost ->
+                    blogPostDao.updateBlogPost(
+                        blogPost.pk,
+                        blogPost.title,
+                        blogPost.body,
+                        blogPost.image
+                    )
+                }
+            }
+
+            override fun setJob(job: Job) {
+                addJob("updateBlogFields", job)
+            }
         }.asLiveData()
     }
 }

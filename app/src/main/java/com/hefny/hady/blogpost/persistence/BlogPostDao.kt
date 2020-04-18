@@ -10,6 +10,21 @@ interface BlogPostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(blogPost: BlogPost): Long
 
+    @Query(
+        """
+        UPDATE blog_post SET title = :title,
+        body = :body,
+        image = :image
+        WHERE pk = :pk
+    """
+    )
+    fun updateBlogPost(
+        pk: Int,
+        title: String,
+        body: String,
+        image: String
+    )
+
     @Delete
     suspend fun deleteBlogPost(blogPost: BlogPost)
 

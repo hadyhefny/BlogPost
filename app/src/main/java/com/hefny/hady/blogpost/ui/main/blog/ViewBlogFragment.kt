@@ -1,7 +1,9 @@
 package com.hefny.hady.blogpost.ui.main.blog
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import androidx.core.net.toUri
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.blogpost.R
@@ -10,9 +12,7 @@ import com.hefny.hady.blogpost.ui.AreYouSureCallback
 import com.hefny.hady.blogpost.ui.UIMessage
 import com.hefny.hady.blogpost.ui.UIMessageType
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.isAuthorOfBlogPost
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.removeDeletedBlogPost
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setIsAuthorOfBlogPost
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.*
 import com.hefny.hady.blogpost.util.DateUtils
 import com.hefny.hady.blogpost.util.SuccessHandling
 import kotlinx.android.synthetic.main.fragment_view_blog.*
@@ -129,6 +129,15 @@ class ViewBlogFragment : BaseBlogFragment() {
     }
 
     private fun navUpdateBlogFragment() {
-        findNavController().navigate(R.id.action_viewBlogFragment_to_updateBlogFragment)
+        try {
+            viewModel.setUpdateBlogPostFields(
+                viewModel.getBlogPost().title,
+                viewModel.getBlogPost().body,
+                viewModel.getBlogPost().image.toUri()
+            )
+            findNavController().navigate(R.id.action_viewBlogFragment_to_updateBlogFragment)
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception: ${e.message}")
+        }
     }
 }

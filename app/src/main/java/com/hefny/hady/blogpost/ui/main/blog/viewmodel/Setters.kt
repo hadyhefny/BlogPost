@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
+import android.net.Uri
 import com.hefny.hady.blogpost.models.BlogPost
 
 fun BlogViewModel.setQuery(query: String) {
@@ -65,4 +66,16 @@ fun BlogViewModel.removeDeletedBlogPost() {
         }
     }
     setBlogListData(list)
+}
+
+fun BlogViewModel.setUpdateBlogPostFields(
+    title: String?,
+    body: String?,
+    uri: Uri?
+) {
+    val update = getCurrentViewStateOrNew()
+    title?.let { update.updateBlogFields.updateBlogTitle = it }
+    body?.let { update.updateBlogFields.updatedBlogBody = it }
+    uri?.let { update.updateBlogFields.updateBlogImage = it }
+    setViewState(update)
 }

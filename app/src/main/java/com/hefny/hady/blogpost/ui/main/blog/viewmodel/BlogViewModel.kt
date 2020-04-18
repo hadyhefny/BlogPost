@@ -13,6 +13,8 @@ import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.util.AbsentLiveData
 import com.hefny.hady.blogpost.util.PreferenceKeys
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 class BlogViewModel
@@ -73,6 +75,28 @@ constructor(
                     blogRepository.deleteBlogPost(
                         authToken,
                         getBlogPost()
+                    )
+                } ?: AbsentLiveData.create()
+            }
+
+            is BlogStateEvent.UpdatedBlogPostEvent -> {
+                val title = RequestBody.create(
+                    MediaType.parse("text/plain"),
+                    stateEvent.title
+                )
+
+                val body = RequestBody.create(
+                    MediaType.parse("text/plain"),
+                    stateEvent.body
+                )
+
+                sessionManager.cachedToken.value?.let { authToken ->
+                    blogRepository.updateBlogFields(
+                        authToken,
+                        getSlug(),
+                        title,
+                        body,
+                        stateEvent.image
                     )
                 } ?: AbsentLiveData.create()
             }
