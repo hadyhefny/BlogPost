@@ -6,10 +6,15 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.models.BlogPost
+import com.hefny.hady.blogpost.ui.AreYouSureCallback
+import com.hefny.hady.blogpost.ui.UIMessage
+import com.hefny.hady.blogpost.ui.UIMessageType
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.isAuthorOfBlogPost
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.removeDeletedBlogPost
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setIsAuthorOfBlogPost
 import com.hefny.hady.blogpost.util.DateUtils
+import com.hefny.hady.blogpost.util.SuccessHandling
 import kotlinx.android.synthetic.main.fragment_view_blog.*
 
 class ViewBlogFragment : BaseBlogFragment() {
@@ -28,8 +33,26 @@ class ViewBlogFragment : BaseBlogFragment() {
         appbarManagement.expandAppBar(R.id.app_bar)
         checkIfAuthorOfBlogPost()
         delete_button.setOnClickListener {
-            deleteBlogPost()
+            confirmDeleteRequest()
         }
+    }
+
+    private fun confirmDeleteRequest() {
+        val callback = object : AreYouSureCallback {
+            override fun proceed() {
+                deleteBlogPost()
+            }
+
+            override fun cancel() {
+                // ignore
+            }
+        }
+        uiCommunicationListener.onUIMessageReceived(
+            UIMessage(
+                getString(R.string.are_you_sure_delete),
+                UIMessageType.AreYouSureDialog(callback)
+            )
+        )
     }
 
     private fun deleteBlogPost() {
@@ -40,11 +63,15 @@ class ViewBlogFragment : BaseBlogFragment() {
         viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState ->
             stateChangeListener.onDataStateChange(dataState)
             dataState.data?.let { data ->
-                data.data?.let { event ->
-                    event.getContentIfNotHandled()?.let { viewState ->
-                        viewModel.setIsAuthorOfBlogPost(
-                            viewState.viewBlogFields.isAuthorOfBlogPost
-                        )
+                data.data?.getContentIfNotHandled()?.let { viewState ->
+                    viewModel.setIsAuthorOfBlogPost(
+                        viewState.viewBlogFields.isAuthorOfBlogPost
+                    )
+                }
+                data.response?.peekContent()?.let { response ->
+                    if (response.message == SuccessHandling.SUCCESS_BLOG_DELETED) {
+                        viewModel.removeDeletedBlogPost()
+                        findNavController().popBackStack()
                     }
                 }
             }

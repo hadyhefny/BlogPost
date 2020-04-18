@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import com.google.android.material.appbar.AppBarLayout
-import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.session.SessionManager
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers.Main
@@ -12,12 +11,35 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-abstract class BaseActivity : DaggerAppCompatActivity(), DataStateChangeListener,
-    KeyboardManagement, AppbarManagement {
+abstract class BaseActivity : DaggerAppCompatActivity(),
+    DataStateChangeListener,
+    KeyboardManagement,
+    AppbarManagement,
+    UICommunicationListener {
     val TAG = "AppDebug"
 
     @Inject
     lateinit var sessionManager: SessionManager
+
+    override fun onUIMessageReceived(uiMessage: UIMessage) {
+        when (uiMessage.uiMessageType) {
+            is UIMessageType.AreYouSureDialog -> {
+                areYouSureDialog(
+                    uiMessage.message,
+                    uiMessage.uiMessageType.callback
+                )
+            }
+            is UIMessageType.Dialog -> {
+                displayInfoDialog(uiMessage.message)
+            }
+            is UIMessageType.Toast -> {
+                displayToast(uiMessage.message)
+            }
+            is UIMessageType.None -> {
+                Log.i(TAG, "onUIMessageReceived: ${uiMessage.message}")
+            }
+        }
+    }
 
     override fun onDataStateChange(dataState: DataState<*>?) {
         dataState?.let {

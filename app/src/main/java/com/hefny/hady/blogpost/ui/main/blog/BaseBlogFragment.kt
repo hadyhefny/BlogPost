@@ -14,6 +14,7 @@ import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.AppbarManagement
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
 import com.hefny.hady.blogpost.ui.KeyboardManagement
+import com.hefny.hady.blogpost.ui.UICommunicationListener
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import dagger.android.support.DaggerFragment
@@ -35,6 +36,8 @@ abstract class BaseBlogFragment : DaggerFragment() {
     lateinit var keyboardManagement: KeyboardManagement
 
     lateinit var appbarManagement: AppbarManagement
+
+    lateinit var uiCommunicationListener: UICommunicationListener
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -74,6 +77,11 @@ abstract class BaseBlogFragment : DaggerFragment() {
             appbarManagement = context as AppbarManagement
         } catch (e: ClassCastException) {
             Log.d(TAG, "$context must implement AppbarManagement")
+        }
+        try {
+            uiCommunicationListener = context as UICommunicationListener
+        } catch (e: ClassCastException) {
+            Log.d(TAG, "$context must implement UICommunicationListener")
         }
     }
 }
