@@ -64,10 +64,13 @@ class BlogFragment : BaseBlogFragment(), BlogListAdapter.Interaction,
             viewModel.viewState.observe(viewLifecycleOwner, Observer { viewState ->
                 Log.d(TAG, "BlogFragment, viewState: $viewState")
                 if (viewState != null) {
-                    recyclerAdapter.submitList(
-                        blogList = viewState.blogFields.blogList,
-                        isQueryExhausted = viewState.blogFields.isQueryExhausted
-                    )
+                    recyclerAdapter.apply {
+                        preloadGlideImages(requestManager, viewState.blogFields.blogList)
+                        submitList(
+                            blogList = viewState.blogFields.blogList,
+                            isQueryExhausted = viewState.blogFields.isQueryExhausted
+                        )
+                    }
                 }
             })
         })

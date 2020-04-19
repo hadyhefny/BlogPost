@@ -116,6 +116,17 @@ class BlogListAdapter(
         differ.submitList(newList)
     }
 
+    fun preloadGlideImages(
+        requestManager: RequestManager,
+        list: List<BlogPost>
+    ) {
+        for (blogPost in list) {
+            requestManager
+                .load(blogPost.image)
+                .preload()
+        }
+    }
+
     override fun getItemViewType(position: Int): Int {
         if (differ.currentList.get(position).pk > -1) {
             return BLOG_ITEM
