@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
+import android.net.Uri
 import com.hefny.hady.blogpost.models.BlogPost
 
 fun BlogViewModel.getSearchQuery(): String {
@@ -63,4 +64,13 @@ fun BlogViewModel.getBlogPost(): BlogPost {
 
 fun getDummyBlogPost(): BlogPost {
     return BlogPost(1, "", "", "", "", 1, "")
+}
+
+fun BlogViewModel.getUpdatedBlogUri(): Uri? {
+    getCurrentViewStateOrNew().let { viewState ->
+        viewState.updateBlogFields.updateBlogImage?.let {
+            return it
+        }
+    }
+    return null
 }

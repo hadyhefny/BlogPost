@@ -45,6 +45,7 @@ abstract class BaseBlogFragment : DaggerFragment() {
         viewModel = activity?.run {
             ViewModelProvider(this, providerFactory).get(BlogViewModel::class.java)
         } ?: throw Exception("Invalid Activity")
+        keyboardManagement.hideSoftKeyboard()
         cancelActiveJobs()
     }
 
