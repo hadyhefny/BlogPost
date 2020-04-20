@@ -52,7 +52,9 @@ dependencies {
     // LiveData
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
     kapt "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
-
+    // liveData Coroutines
+    def liveData_Coroutines_version = "2.3.0-alpha01"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$liveData_Coroutines_version"
     // navigation graph
     def nav_version = "2.1.0-alpha02"
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
