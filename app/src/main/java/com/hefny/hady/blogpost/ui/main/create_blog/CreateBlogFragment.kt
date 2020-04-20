@@ -11,9 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import com.hefny.hady.blogpost.R
-import com.hefny.hady.blogpost.ui.DataState
-import com.hefny.hady.blogpost.ui.Response
-import com.hefny.hady.blogpost.ui.ResponseType
+import com.hefny.hady.blogpost.ui.*
 import com.hefny.hady.blogpost.util.Constants
 import com.hefny.hady.blogpost.util.ErrorHandling
 import com.theartofdev.edmodo.cropper.CropImage
@@ -99,7 +97,11 @@ class CreateBlogFragment : BaseCreateBlogFragment() {
 
     private fun showErrorDialog(errorMessage: String) {
         stateChangeListener.onDataStateChange(
-            DataState.data(null, Response(errorMessage, ResponseType.Dialog()))
+            DataState(
+                Event(StateError(Response(errorMessage, ResponseType.Dialog()))),
+                Loading(false),
+                Data(Event.dataEvent(null), null)
+            )
         )
     }
 
