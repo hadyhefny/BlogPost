@@ -12,6 +12,7 @@ import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
+import com.hefny.hady.blogpost.ui.KeyboardManagement
 import com.hefny.hady.blogpost.ui.StoragePermissionInterface
 import com.hefny.hady.blogpost.ui.UICommunicationListener
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
@@ -24,6 +25,7 @@ abstract class BaseCreateBlogFragment : DaggerFragment() {
     lateinit var stateChangeListener: DataStateChangeListener
     lateinit var viewModel: CreateBlogViewModel
     lateinit var storagePermissionInterface: StoragePermissionInterface
+    lateinit var keyboardManagement: KeyboardManagement
 
     @Inject
     lateinit var requestManager: RequestManager
@@ -69,6 +71,11 @@ abstract class BaseCreateBlogFragment : DaggerFragment() {
             storagePermissionInterface = context as StoragePermissionInterface
         } catch (e: ClassCastException) {
             Log.e(TAG, "$context must implement StoragePermissionInterface")
+        }
+        try {
+            keyboardManagement = context as KeyboardManagement
+        } catch (e: ClassCastException) {
+            Log.e(TAG, "$context must implement KeyboardManagement")
         }
     }
 }

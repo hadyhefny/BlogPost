@@ -11,6 +11,8 @@ import com.hefny.hady.blogpost.ui.Loading
 import com.hefny.hady.blogpost.ui.main.create_blog.state.CreateBlogStateEvent
 import com.hefny.hady.blogpost.ui.main.create_blog.state.CreateBlogViewState
 import com.hefny.hady.blogpost.util.AbsentLiveData
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 class CreateBlogViewModel
@@ -22,7 +24,23 @@ constructor(
     override fun handleStateEvent(stateEvent: CreateBlogStateEvent): LiveData<DataState<CreateBlogViewState>> {
         when (stateEvent) {
             is CreateBlogStateEvent.CreateNewBlogEvent -> {
-                return AbsentLiveData.create()
+                val title = RequestBody.create(
+                    MediaType.parse("text/plain"),
+                    stateEvent.title
+                )
+
+                val body = RequestBody.create(
+                    MediaType.parse("text/plain"),
+                    stateEvent.body
+                )
+                return sessionManager.cachedToken.value?.let { authToken ->
+                    createBlogRepository.createNewBlogPost(
+                        authToken,
+                        title,
+                        body,
+                        stateEvent.image
+                    )
+                } ?: AbsentLiveData.create()
             }
             is CreateBlogStateEvent.None -> {
                 return liveData {
@@ -50,6 +68,14 @@ constructor(
         imageUri?.let { newBlogFields.newImageUri = it }
         update.blogFields = newBlogFields
         setViewState(update)
+    }
+
+    fun getNewImageUri(): Uri? {
+        getCurrentViewStateOrNew().let {
+            it.blogFields.let {
+                return it.newImageUri
+            }
+        }
     }
 
     fun clearNewBlogFields() {
