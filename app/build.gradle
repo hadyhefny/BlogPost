@@ -95,4 +95,7 @@ dependencies {
     // leak Canary
     def leak_canary_version = 2.2
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leak_canary_version"
+    // android image cropper
+    def image_cropper_version = "2.8.+"
+    api "com.theartofdev.edmodo:android-image-cropper:$image_cropper_version"
 }

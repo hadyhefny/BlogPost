@@ -1,10 +1,15 @@
 package com.hefny.hady.blogpost.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.AppBarLayout
 import com.hefny.hady.blogpost.session.SessionManager
+import com.hefny.hady.blogpost.util.Constants
 import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
@@ -15,7 +20,8 @@ abstract class BaseActivity : DaggerAppCompatActivity(),
     DataStateChangeListener,
     KeyboardManagement,
     AppbarManagement,
-    UICommunicationListener {
+    UICommunicationListener,
+    StoragePermissionInterface {
     val TAG = "AppDebug"
 
     @Inject
@@ -112,6 +118,28 @@ abstract class BaseActivity : DaggerAppCompatActivity(),
 
     override fun expandAppBar(appbarId: Int) {
         findViewById<AppBarLayout>(appbarId).setExpanded(true)
+    }
+
+    override fun isStoragePermissionGranted(): Boolean {
+        if (
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+            &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                Constants.PERMISSIONS_REQUEST_READ_STORAGE
+            )
+            return false
+        } else {
+            return true
+        }
     }
 
     abstract fun displayProgressBar(loading: Boolean)

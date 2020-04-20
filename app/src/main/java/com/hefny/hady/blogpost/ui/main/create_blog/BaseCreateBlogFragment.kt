@@ -9,8 +9,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
+import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
+import com.hefny.hady.blogpost.ui.StoragePermissionInterface
 import com.hefny.hady.blogpost.ui.UICommunicationListener
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import dagger.android.support.DaggerFragment
@@ -21,6 +23,10 @@ abstract class BaseCreateBlogFragment : DaggerFragment() {
     lateinit var uiCommunicationListener: UICommunicationListener
     lateinit var stateChangeListener: DataStateChangeListener
     lateinit var viewModel: CreateBlogViewModel
+    lateinit var storagePermissionInterface: StoragePermissionInterface
+
+    @Inject
+    lateinit var requestManager: RequestManager
 
     @Inject
     lateinit var providerFactory: ViewModelProviderFactory
@@ -58,6 +64,11 @@ abstract class BaseCreateBlogFragment : DaggerFragment() {
             uiCommunicationListener = context as UICommunicationListener
         } catch (e: ClassCastException) {
             Log.e(TAG, "$context must implement UICommunicationListener")
+        }
+        try {
+            storagePermissionInterface = context as StoragePermissionInterface
+        } catch (e: ClassCastException) {
+            Log.e(TAG, "$context must implement StoragePermissionInterface")
         }
     }
 }
