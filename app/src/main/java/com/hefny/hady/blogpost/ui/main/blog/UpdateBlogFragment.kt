@@ -1,16 +1,29 @@
 package com.hefny.hady.blogpost.ui.main.blog
 
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.*
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.ui.*
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.getUpdatedBlogUri
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.onBlogPostUpdateSuccess
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setUpdateBlogPostFields
+import com.hefny.hady.blogpost.util.Constants
+import com.hefny.hady.blogpost.util.ErrorHandling
+import com.theartofdev.edmodo.cropper.CropImage
+import com.theartofdev.edmodo.cropper.CropImageView
 import kotlinx.android.synthetic.main.fragment_update_blog.*
+import okhttp3.MediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import java.io.File
 
 class UpdateBlogFragment : BaseBlogFragment() {
     override fun onCreateView(
@@ -25,6 +38,11 @@ class UpdateBlogFragment : BaseBlogFragment() {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
+        image_container.setOnClickListener {
+            if (storagePermissionInterface.isStoragePermissionGranted()) {
+                pickFromGallery()
+            }
+        }
     }
 
     private fun subscribeObservers() {
@@ -65,14 +83,86 @@ class UpdateBlogFragment : BaseBlogFragment() {
     }
 
     private fun saveChanges() {
-        var multipartBody: MultipartBody.Part? = null
-        viewModel.setStateEvent(
-            BlogStateEvent.UpdatedBlogPostEvent(
-                blog_title.text.toString(),
-                blog_body.text.toString(),
-                multipartBody
+        var mulitpartBody: MultipartBody.Part? = null
+        viewModel.getUpdatedBlogUri()?.let { imageUri ->
+            imageUri.path?.let { filePath ->
+                val imageFile = File(filePath)
+                Log.d(TAG, "CreateBlogFragment: imageFile: $imageFile")
+                val requestBody = RequestBody.create(
+                    MediaType.parse("image/*"),
+                    imageFile
+                )
+                mulitpartBody = MultipartBody.Part.createFormData(
+                    "image",
+                    imageFile.name,
+                    requestBody
+                )
+            }
+        }
+        mulitpartBody?.let {
+            viewModel.setStateEvent(
+                BlogStateEvent.UpdatedBlogPostEvent(
+                    blog_title.text.toString(),
+                    blog_body.text.toString(),
+                    it
+                )
+            )
+            keyboardManagement.hideSoftKeyboard()
+        } ?: showErrorDialog(ErrorHandling.ERROR_MUST_SELECT_IMAGE)
+    }
+
+    private fun showErrorDialog(errorMessage: String) {
+        stateChangeListener.onDataStateChange(
+            DataState(
+                Event(StateError(Response(errorMessage, ResponseType.Dialog()))),
+                Loading(false),
+                Data(Event.dataEvent(null), null)
             )
         )
+    }
+
+    private fun pickFromGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        val mimeTypes = arrayOf("image/jpeg", "image/png", "image/jpg")
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        startActivityForResult(intent, Constants.GALLERY_REQUEST_CODE)
+    }
+
+    private fun launchImageCrop(uri: Uri?) {
+        context?.let {
+            CropImage.activity(uri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .start(it, this)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                Constants.GALLERY_REQUEST_CODE -> {
+                    data?.data?.let { uri ->
+                        launchImageCrop(uri)
+                    } ?: showErrorDialog(ErrorHandling.ERROR_SOMETHING_WRONG_WITH_IMAGE)
+                }
+                CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE -> {
+                    Log.d(TAG, "Crop: CROP_IMAGE_ACTIVITY_REQUEST_CODE")
+                    val result = CropImage.getActivityResult(data)
+                    val resultUri = result.uri
+                    Log.d(TAG, "Crop: CROP_IMAGE_ACTIVITY_REQUEST_CODE: uri: $resultUri ")
+                    viewModel.setUpdateBlogPostFields(
+                        null,
+                        null,
+                        resultUri
+                    )
+                }
+                CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE -> {
+                    showErrorDialog(ErrorHandling.ERROR_SOMETHING_WRONG_WITH_IMAGE)
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
