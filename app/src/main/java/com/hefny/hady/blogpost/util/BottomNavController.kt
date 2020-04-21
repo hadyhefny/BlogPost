@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.util
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.os.Parcelable
@@ -10,6 +11,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.blogpost.R
 import kotlinx.android.parcel.Parcelize
@@ -19,7 +21,8 @@ import kotlinx.android.parcel.Parcelize
  * depending on which navigation graph has been added to it.
  */
 
-const val BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY = "com.hefny.hady.blogpost.util.BottomNavController.BackStack"
+const val BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY =
+    "com.hefny.hady.blogpost.util.BottomNavController.BackStack"
 
 class BottomNavController(
     val context: Context,
@@ -74,11 +77,15 @@ class BottomNavController(
         return true
     }
 
+    @SuppressLint("RestrictedApi")
     fun onBackPressed() {
-        val childFragmentManager = fragmentManager.findFragmentById(containerId)!!
-            .childFragmentManager
+//        val childFragmentManager = fragmentManager.findFragmentById(containerId)!!
+//            .childFragmentManager
+        val navController = fragmentManager.findFragmentById(containerId)!!.findNavController()
+
         when {
-            childFragmentManager.popBackStackImmediate() -> {
+            navController.backStack.size > 2 -> {
+                navController.popBackStack()
             }
             // fragment backstack is empty so try to back on the navigation stack
             navigationBackStack.size > 1 -> {
