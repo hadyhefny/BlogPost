@@ -2,12 +2,14 @@ package com.hefny.hady.blogpost.ui.auth
 
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
-abstract class BaseAuthFragment : DaggerFragment() {
+abstract class BaseAuthFragment : Fragment(),Injectable {
 
     @Inject
     lateinit var providerFactory: ViewModelProviderFactory

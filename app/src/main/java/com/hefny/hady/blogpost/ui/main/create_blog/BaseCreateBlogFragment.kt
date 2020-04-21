@@ -5,21 +5,22 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
 import com.hefny.hady.blogpost.ui.KeyboardManagement
 import com.hefny.hady.blogpost.ui.StoragePermissionInterface
 import com.hefny.hady.blogpost.ui.UICommunicationListener
 import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
-import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
-abstract class BaseCreateBlogFragment : DaggerFragment() {
+abstract class BaseCreateBlogFragment : Fragment(), Injectable {
     val TAG: String = "AppDebug"
     lateinit var uiCommunicationListener: UICommunicationListener
     lateinit var stateChangeListener: DataStateChangeListener

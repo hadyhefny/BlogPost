@@ -1,11 +1,19 @@
 package com.hefny.hady.blogpost
 
-import com.hefny.hady.blogpost.di.DaggerAppComponent
-import dagger.android.AndroidInjector
-import dagger.android.support.DaggerApplication
+import android.app.Activity
+import android.app.Application
+import com.hefny.hady.blogpost.di.AppInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasActivityInjector
+import javax.inject.Inject
 
-class BaseApplication : DaggerApplication() {
-    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
-        return DaggerAppComponent.builder().application(this).build()
+class BaseApplication : Application(), HasActivityInjector {
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
+    override fun onCreate() {
+        super.onCreate()
+        AppInjector.init(this)
     }
+
+    override fun activityInjector() = dispatchingAndroidInjector
 }

@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.AppBarLayout
+import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.util.Constants
 import dagger.android.support.DaggerAppCompatActivity
