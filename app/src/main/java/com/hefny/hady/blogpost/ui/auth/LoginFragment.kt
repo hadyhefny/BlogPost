@@ -36,9 +36,11 @@ class LoginFragment : BaseAuthFragment() {
 
     private fun subscribeObservers() {
         viewModel.viewState.observe(viewLifecycleOwner, Observer { authViewState ->
-            authViewState.loginFields?.let { loginFields ->
-                loginFields.login_email?.let { input_email.setText(it) }
-                loginFields.login_password?.let { input_password.setText(it) }
+            if (authViewState != null) {
+                authViewState.loginFields?.let { loginFields ->
+                    loginFields.login_email?.let { input_email.setText(it) }
+                    loginFields.login_password?.let { input_password.setText(it) }
+                }
             }
         })
     }

@@ -39,12 +39,14 @@ class RegisterFragment : BaseAuthFragment() {
 
     private fun subscribeObservers() {
         viewModel.viewState.observe(viewLifecycleOwner, Observer { authViewState ->
-            authViewState.registrationFields?.let { registrationFields ->
-                registrationFields.register_email?.let { inputText_email.setText(it) }
-                registrationFields.register_username?.let { inputText_username.setText(it) }
-                registrationFields.register_password?.let { inputText_password.setText(it) }
-                registrationFields.register_confirm_password?.let {
-                    inputText_confirm_password.setText(it)
+            if (authViewState != null) {
+                authViewState.registrationFields?.let { registrationFields ->
+                    registrationFields.register_email?.let { inputText_email.setText(it) }
+                    registrationFields.register_username?.let { inputText_username.setText(it) }
+                    registrationFields.register_password?.let { inputText_password.setText(it) }
+                    registrationFields.register_confirm_password?.let {
+                        inputText_confirm_password.setText(it)
+                    }
                 }
             }
         })

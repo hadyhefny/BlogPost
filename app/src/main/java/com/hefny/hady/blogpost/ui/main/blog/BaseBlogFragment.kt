@@ -10,43 +10,53 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
-import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.ui.*
+import com.hefny.hady.blogpost.ui.main.MainDependencyProvider
+import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
+import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
-import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
-import javax.inject.Inject
 
 abstract class BaseBlogFragment : Fragment(), Injectable {
     val TAG: String = "AppDebug"
-
-    @Inject
-    lateinit var providerFactory: ViewModelProviderFactory
-
-    @Inject
-    lateinit var requestManager: RequestManager
-
     lateinit var viewModel: BlogViewModel
-
     lateinit var stateChangeListener: DataStateChangeListener
-
     lateinit var keyboardManagement: KeyboardManagement
-
     lateinit var appbarManagement: AppbarManagement
-
     lateinit var uiCommunicationListener: UICommunicationListener
-
     lateinit var storagePermissionInterface: StoragePermissionInterface
+    lateinit var mainDependencyProvider: MainDependencyProvider
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = activity?.run {
+            ViewModelProvider(
+                this,
+                mainDependencyProvider.getViewModelProviderFactory()
+            ).get(BlogViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+        cancelActiveJobs()
+        // restore state after process death
+        savedInstanceState?.let { inState ->
+            (inState[BLOG_VIEW_STATE_BUNDLE_KEY] as BlogViewState?)?.let { viewState ->
+                viewModel.setViewState(viewState)
+            }
+        }
+    }
+
+    private fun isViewModelInitialized() = ::viewModel.isInitialized
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (isViewModelInitialized()) {
+            outState.putParcelable(BLOG_VIEW_STATE_BUNDLE_KEY, viewModel.viewState.value)
+        }
+        super.onSaveInstanceState(outState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupActionBarWithNavController(R.id.blogFragment, activity as AppCompatActivity)
-        viewModel = activity?.run {
-            ViewModelProvider(this, providerFactory).get(BlogViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
         keyboardManagement.hideSoftKeyboard()
-        cancelActiveJobs()
     }
 
     fun cancelActiveJobs() {
@@ -88,6 +98,11 @@ abstract class BaseBlogFragment : Fragment(), Injectable {
             storagePermissionInterface = context as StoragePermissionInterface
         } catch (e: ClassCastException) {
             Log.d(TAG, "$context must implement StoragePermissionInterface")
+        }
+        try {
+            mainDependencyProvider = context as MainDependencyProvider
+        } catch (e: ClassCastException) {
+            Log.d(TAG, "$context must implement MainDependencyProvider")
         }
     }
 }

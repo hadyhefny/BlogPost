@@ -14,26 +14,46 @@ import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
 import com.hefny.hady.blogpost.ui.KeyboardManagement
-import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
-import javax.inject.Inject
+import com.hefny.hady.blogpost.ui.main.MainDependencyProvider
+import com.hefny.hady.blogpost.ui.main.account.state.ACCOUNT_VIEW_STATE_BUNDLE_KEY
+import com.hefny.hady.blogpost.ui.main.account.state.AccountViewState
 
 abstract class BaseAccountFragment : Fragment(), Injectable {
     val TAG: String = "AppDebug"
-
-    @Inject
-    lateinit var providerFactory: ViewModelProviderFactory
-
     lateinit var viewModel: AccountViewModel
     lateinit var stateChangeListener: DataStateChangeListener
     lateinit var keyboardManagement: KeyboardManagement
+    lateinit var mainDependencyProvider: MainDependencyProvider
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel = activity?.run {
+            ViewModelProvider(
+                this,
+                mainDependencyProvider.getViewModelProviderFactory()
+            ).get(AccountViewModel::class.java)
+        } ?: throw Exception("Invalid Activity")
+        cancelActiveJobs()
+        // restore state after process death
+        savedInstanceState?.let { inState ->
+            (inState[ACCOUNT_VIEW_STATE_BUNDLE_KEY] as AccountViewState?)?.let { viewState ->
+                viewModel.setViewState(viewState)
+            }
+        }
+    }
+
+    private fun isViewModelInitialized() = ::viewModel.isInitialized
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (isViewModelInitialized()) {
+            outState.putParcelable(ACCOUNT_VIEW_STATE_BUNDLE_KEY, viewModel.viewState.value)
+        }
+        super.onSaveInstanceState(outState)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = activity?.run {
-            ViewModelProvider(this, providerFactory).get(AccountViewModel::class.java)
-        } ?: throw Exception("Invalid Activity")
         setupActionBarWithNavController(R.id.accountFragment, activity as AppCompatActivity)
-        cancelActiveJobs()
     }
 
     fun cancelActiveJobs() {
@@ -60,6 +80,11 @@ abstract class BaseAccountFragment : Fragment(), Injectable {
             keyboardManagement = context as KeyboardManagement
         } catch (e: ClassCastException) {
             Log.e(TAG, "$context must implement KeyboardManagementInterface")
+        }
+        try {
+            mainDependencyProvider = context as MainDependencyProvider
+        } catch (e: ClassCastException) {
+            Log.e(TAG, "$context must implement MainDependencyProvider")
         }
     }
 }

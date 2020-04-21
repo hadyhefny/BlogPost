@@ -15,13 +15,14 @@ import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 
-class AuthActivity : BaseActivity() {
-
+class AuthActivity : BaseActivity(),
+    AuthDependencyProvider {
     @Inject
     lateinit var providerFactory: ViewModelProviderFactory
 
     lateinit var viewModel: AuthViewModel
 
+    override fun getViewModelProviderFactory() = providerFactory
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
@@ -39,10 +40,9 @@ class AuthActivity : BaseActivity() {
     }
 
     private fun subscribeObservers() {
-
         viewModel.dataState.observe(this, Observer { dataState ->
-            onDataStateChange(dataState)
             if (dataState != null) {
+                onDataStateChange(dataState)
                 dataState.data?.let { data ->
                     data.data?.let { event ->
                         event.getContentIfNotHandled()?.let {

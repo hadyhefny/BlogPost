@@ -65,7 +65,10 @@ class BlogFragment : BaseBlogFragment(), BlogListAdapter.Interaction,
                 Log.d(TAG, "BlogFragment, viewState: $viewState")
                 if (viewState != null) {
                     recyclerAdapter.apply {
-                        preloadGlideImages(requestManager, viewState.blogFields.blogList)
+                        preloadGlideImages(
+                            mainDependencyProvider.getGlideRequestManager(),
+                            viewState.blogFields.blogList
+                        )
                         submitList(
                             blogList = viewState.blogFields.blogList,
                             isQueryExhausted = viewState.blogFields.isQueryExhausted
@@ -111,7 +114,10 @@ class BlogFragment : BaseBlogFragment(), BlogListAdapter.Interaction,
             removeItemDecoration(topSpacingDecorator) // does nothing if not applied already
             addItemDecoration(topSpacingDecorator)
 
-            recyclerAdapter = BlogListAdapter(requestManager, this@BlogFragment)
+            recyclerAdapter = BlogListAdapter(
+                mainDependencyProvider.getGlideRequestManager(),
+                this@BlogFragment
+            )
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {

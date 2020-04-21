@@ -8,8 +8,11 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
+import com.bumptech.glide.RequestManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.models.AUTH_TOKEN_BUNDLE_KEY
+import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.AuthActivity
 import com.hefny.hady.blogpost.ui.main.account.BaseAccountFragment
@@ -22,12 +25,21 @@ import com.hefny.hady.blogpost.ui.main.create_blog.BaseCreateBlogFragment
 import com.hefny.hady.blogpost.util.BottomNavController
 import com.hefny.hady.blogpost.util.BottomNavController.*
 import com.hefny.hady.blogpost.util.setUpNavigation
+import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.activity_main.*
+import javax.inject.Inject
 
 class MainActivity : BaseActivity(),
     NavGraphProvider,
     OnNavigationGraphChanged,
-    OnNavigationReselectedListener {
+    OnNavigationReselectedListener,
+    MainDependencyProvider {
+
+    @Inject
+    lateinit var requestManager: RequestManager
+
+    @Inject
+    lateinit var providerFactory: ViewModelProviderFactory
 
     private lateinit var bottomNavigationView: BottomNavigationView
     private val bottomNavController by lazy(LazyThreadSafetyMode.NONE) {
@@ -40,6 +52,8 @@ class MainActivity : BaseActivity(),
         )
     }
 
+    override fun getViewModelProviderFactory() = providerFactory
+    override fun getGlideRequestManager() = requestManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -50,6 +64,20 @@ class MainActivity : BaseActivity(),
             bottomNavController.onNavigationItemSelected()
         }
         subscribeObservers()
+        restoreSession(savedInstanceState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun restoreSession(savedInstanceState: Bundle?) {
+        savedInstanceState?.let { inState ->
+            inState[AUTH_TOKEN_BUNDLE_KEY]?.let { authToken ->
+                sessionManager.setValue(authToken as AuthToken)
+            }
+        }
     }
 
     private fun setupActionBar() {
