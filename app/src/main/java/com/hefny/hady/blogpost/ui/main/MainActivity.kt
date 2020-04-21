@@ -22,6 +22,7 @@ import com.hefny.hady.blogpost.ui.main.blog.BaseBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.UpdateBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.ViewBlogFragment
 import com.hefny.hady.blogpost.ui.main.create_blog.BaseCreateBlogFragment
+import com.hefny.hady.blogpost.util.BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY
 import com.hefny.hady.blogpost.util.BottomNavController
 import com.hefny.hady.blogpost.util.BottomNavController.*
 import com.hefny.hady.blogpost.util.setUpNavigation
@@ -58,18 +59,33 @@ class MainActivity : BaseActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupActionBar()
-        bottomNavigationView = findViewById(R.id.bottom_navigation_view)
-        bottomNavigationView.setUpNavigation(bottomNavController, this)
-        if (savedInstanceState == null) {
-            bottomNavController.onNavigationItemSelected()
-        }
+        setupBottomNavView(savedInstanceState)
         subscribeObservers()
         restoreSession(savedInstanceState)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
+        outState.putIntArray(
+            BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY,
+            bottomNavController.navigationBackStack.toIntArray()
+        )
         super.onSaveInstanceState(outState)
+    }
+
+    private fun setupBottomNavView(savedInstanceState: Bundle?) {
+        bottomNavigationView = findViewById(R.id.bottom_navigation_view)
+        bottomNavigationView.setUpNavigation(bottomNavController, this)
+        if (savedInstanceState == null) {
+            bottomNavController.setupBottomNavBackStack(null)
+            bottomNavController.onNavigationItemSelected()
+        } else {
+            (savedInstanceState[BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY] as IntArray?)?.let { items ->
+                val backStack = BackStack()
+                backStack.addAll(items.toTypedArray())
+                bottomNavController.setupBottomNavBackStack(backStack)
+            }
+        }
     }
 
     private fun restoreSession(savedInstanceState: Bundle?) {

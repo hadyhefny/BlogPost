@@ -2,6 +2,7 @@ package com.hefny.hady.blogpost.util
 
 import android.app.Activity
 import android.content.Context
+import android.os.Parcelable
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -11,11 +12,15 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.hefny.hady.blogpost.R
+import kotlinx.android.parcel.Parcelize
 
 /**
  * programmatically add nav host fragments which will have their own backstaks
  * depending on which navigation graph has been added to it.
  */
+
+const val BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY = "com.hefny.hady.blogpost.util.BottomNavController.BackStack"
+
 class BottomNavController(
     val context: Context,
     @IdRes val containerId: Int,
@@ -27,13 +32,19 @@ class BottomNavController(
     lateinit var activity: Activity
     lateinit var fragmentManager: FragmentManager
     lateinit var navItemChangeListener: OnNavigationItemChanged
-    private val navigationBackStack = BackStack.of(appStartDestinationId)
+    lateinit var navigationBackStack: BackStack
 
     init {
         if (context is Activity) {
             activity = context
             fragmentManager = (activity as FragmentActivity).supportFragmentManager
         }
+    }
+
+    fun setupBottomNavBackStack(previousBackStack: BackStack?) {
+        navigationBackStack = previousBackStack?.let {
+            it
+        } ?: BackStack.of(appStartDestinationId)
     }
 
     fun onNavigationItemSelected(itemId: Int = navigationBackStack.last()): Boolean {
@@ -87,7 +98,8 @@ class BottomNavController(
         }
     }
 
-    private class BackStack : ArrayList<Int>() {
+    @Parcelize
+    class BackStack : ArrayList<Int>(), Parcelable {
         companion object {
             fun of(vararg elements: Int): BackStack {
                 val b = BackStack()
@@ -97,6 +109,7 @@ class BottomNavController(
         }
 
         fun removeLast() = removeAt(size - 1)
+
         // removes the item and add it to the end of the list
         // ex: [1,2,3,4]
         // moveLast(3)
