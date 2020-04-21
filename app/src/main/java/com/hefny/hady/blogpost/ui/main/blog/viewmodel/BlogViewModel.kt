@@ -52,6 +52,7 @@ constructor(
     override fun handleStateEvent(stateEvent: BlogStateEvent): LiveData<DataState<BlogViewState>> {
         return when (stateEvent) {
             is BlogStateEvent.BlogSearchEvent -> {
+                clearLayoutManagerState()
                 sessionManager.cachedToken.value?.let { authToken ->
                     blogRepository.searchBlogPosts(
                         authToken = authToken,
@@ -60,6 +61,13 @@ constructor(
                         page = getPage()
                     )
                 } ?: AbsentLiveData.create()
+            }
+            is BlogStateEvent.RestoreBlogListFromCache -> {
+                blogRepository.restoreBlogListFromCache(
+                    query = getSearchQuery(),
+                    filterAndOrder = getOrder() + getFilter(),
+                    page = getPage()
+                )
             }
             is BlogStateEvent.CheckAuthorOfBlogPostEvent -> {
                 sessionManager.cachedToken.value?.let { authToken ->

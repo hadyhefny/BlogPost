@@ -1,6 +1,7 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
 import android.net.Uri
+import android.os.Parcelable
 import com.hefny.hady.blogpost.models.BlogPost
 
 fun BlogViewModel.setQuery(query: String) {
@@ -12,6 +13,18 @@ fun BlogViewModel.setQuery(query: String) {
 fun BlogViewModel.setBlogListData(blogList: List<BlogPost>) {
     val update = getCurrentViewStateOrNew()
     update.blogFields.blogList = blogList
+    setViewState(update)
+}
+
+fun BlogViewModel.setLayoutManagerState(lmState: Parcelable?) {
+    val update = getCurrentViewStateOrNew()
+    update.blogFields.layoutManagerState = lmState
+    setViewState(update)
+}
+
+fun BlogViewModel.clearLayoutManagerState() {
+    val update = getCurrentViewStateOrNew()
+    update.blogFields.layoutManagerState = null
     setViewState(update)
 }
 
