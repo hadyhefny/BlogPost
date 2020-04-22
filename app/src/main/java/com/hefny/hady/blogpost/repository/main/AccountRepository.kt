@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.hefny.hady.blogpost.api.GenericResponse
 import com.hefny.hady.blogpost.api.main.OpenApiMainService
+import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+@MainScope
 class AccountRepository
 @Inject
 constructor(

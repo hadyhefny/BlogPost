@@ -4,30 +4,63 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.viewModels
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.hefny.hady.blogpost.BaseApplication
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.fragments.auth.AuthNavHostFragment
 import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.state.AuthStateEvent
 import com.hefny.hady.blogpost.ui.main.MainActivity
-import com.hefny.hady.blogpost.viewmodels.ViewModelProviderFactory
 import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 
-class AuthActivity : BaseActivity(),
-    AuthDependencyProvider {
+class AuthActivity : BaseActivity() {
+
     @Inject
-    lateinit var providerFactory: ViewModelProviderFactory
+    lateinit var fragmentFactory: FragmentFactory
 
-    lateinit var viewModel: AuthViewModel
+    @Inject
+    lateinit var providerFactory: ViewModelProvider.Factory
 
-    override fun getViewModelProviderFactory() = providerFactory
+    val viewModel: AuthViewModel by viewModels {
+        providerFactory
+    }
+
+    override fun inject() {
+        (application as BaseApplication).authComponent().inject(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
-        viewModel = ViewModelProvider(this, providerFactory).get(AuthViewModel::class.java)
         subscribeObservers()
+        onRestoreInstanceState()
+    }
+
+    private fun onRestoreInstanceState() {
+        val host = supportFragmentManager
+            .findFragmentById(R.id.auth_fragments_container)
+        host?.let {
+            // do nothing
+        } ?: createNavHost()
+    }
+
+    private fun createNavHost() {
+        val navHost = AuthNavHostFragment.create(
+            R.navigation.auth_nav_graph
+        )
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.auth_fragments_container,
+                navHost,
+                getString(R.string.AuthNavHost)
+            )
+            .setPrimaryNavigationFragment(navHost)
+            .commit()
     }
 
     override fun onResume() {
@@ -79,6 +112,7 @@ class AuthActivity : BaseActivity(),
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
+        (application as BaseApplication).releaseAuthComponent()
     }
 
     override fun displayProgressBar(loading: Boolean) {

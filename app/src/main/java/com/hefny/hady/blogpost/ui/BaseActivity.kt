@@ -3,22 +3,21 @@ package com.hefny.hady.blogpost.ui
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.appbar.AppBarLayout
-import com.hefny.hady.blogpost.di.Injectable
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.util.Constants
-import dagger.android.support.DaggerAppCompatActivity
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-abstract class BaseActivity : DaggerAppCompatActivity(),
+abstract class BaseActivity : AppCompatActivity(),
     DataStateChangeListener,
     KeyboardManagement,
     AppbarManagement,
@@ -28,6 +27,13 @@ abstract class BaseActivity : DaggerAppCompatActivity(),
 
     @Inject
     lateinit var sessionManager: SessionManager
+
+    abstract fun inject()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        inject()
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onUIMessageReceived(uiMessage: UIMessage) {
         when (uiMessage.uiMessageType) {

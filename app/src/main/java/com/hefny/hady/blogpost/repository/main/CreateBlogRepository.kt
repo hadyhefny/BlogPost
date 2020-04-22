@@ -3,6 +3,7 @@ package com.hefny.hady.blogpost.repository.main
 import androidx.lifecycle.LiveData
 import com.hefny.hady.blogpost.api.main.OpenApiMainService
 import com.hefny.hady.blogpost.api.main.responses.BlogCreateUpdateResponse
+import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.persistence.BlogPostDao
@@ -21,6 +22,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import javax.inject.Inject
 
+@MainScope
 class CreateBlogRepository
 @Inject
 constructor(

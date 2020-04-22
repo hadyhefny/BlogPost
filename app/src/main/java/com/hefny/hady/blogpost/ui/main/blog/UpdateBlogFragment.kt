@@ -6,12 +6,22 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.ui.*
+import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
+import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.getUpdatedBlogUri
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.onBlogPostUpdateSuccess
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setUpdateBlogPostFields
@@ -24,14 +34,40 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import javax.inject.Inject
 
-class UpdateBlogFragment : BaseBlogFragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_update_blog, container, false)
+@MainScope
+class UpdateBlogFragment
+@Inject
+constructor(
+    private val viewModelFactory: ViewModelProvider.Factory,
+    private val requestManager: RequestManager
+) : BaseBlogFragment(R.layout.fragment_update_blog) {
+
+    val viewModel: BlogViewModel by viewModels {
+        viewModelFactory
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        cancelActiveJobs()
+        // restore state after process death
+        savedInstanceState?.let { inState ->
+            (inState[BLOG_VIEW_STATE_BUNDLE_KEY] as BlogViewState?)?.let { viewState ->
+                viewModel.setViewState(viewState)
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        val viewState = viewModel.viewState.value
+        viewState?.blogFields?.blogList = ArrayList()
+        outState.putParcelable(BLOG_VIEW_STATE_BUNDLE_KEY, viewState)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun cancelActiveJobs() {
+        viewModel.cancelActiveJobs()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -77,7 +113,7 @@ class UpdateBlogFragment : BaseBlogFragment() {
         updatedBlogBody: String?,
         updateBlogImage: Uri?
     ) {
-        mainDependencyProvider.getGlideRequestManager()
+        requestManager
             .load(updateBlogImage)
             .into(blog_image)
         blog_title.setText(updateBlogTitle)

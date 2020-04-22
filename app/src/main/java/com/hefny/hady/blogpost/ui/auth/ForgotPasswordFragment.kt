@@ -5,15 +5,17 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.TranslateAnimation
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.di.auth.AuthScope
 import com.hefny.hady.blogpost.ui.DataState
 import com.hefny.hady.blogpost.ui.DataStateChangeListener
 import com.hefny.hady.blogpost.ui.Response
@@ -23,8 +25,24 @@ import kotlinx.android.synthetic.main.fragment_forgot_password.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ForgotPasswordFragment : BaseAuthFragment() {
+@AuthScope
+class ForgotPasswordFragment
+@Inject
+constructor(
+    private val viewModelFactory: ViewModelProvider.Factory
+) : Fragment(R.layout.fragment_forgot_password) {
+
+    val viewModel: AuthViewModel by viewModels {
+        viewModelFactory
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        viewModel.cancelActiveJobs()
+        super.onCreate(savedInstanceState)
+    }
+
     private val TAG: String = "AppDebug"
     lateinit var webView: WebView
     lateinit var stateChangeListener: DataStateChangeListener
@@ -46,14 +64,6 @@ class ForgotPasswordFragment : BaseAuthFragment() {
                 stateChangeListener.onDataStateChange(DataState.loading<Any>(isLoading))
             }
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_forgot_password, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

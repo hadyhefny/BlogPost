@@ -3,27 +3,35 @@ package com.hefny.hady.blogpost.ui.auth
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.hefny.hady.blogpost.R
+import com.hefny.hady.blogpost.di.auth.AuthScope
 import com.hefny.hady.blogpost.ui.auth.state.AuthStateEvent
 import com.hefny.hady.blogpost.ui.auth.state.RegistrationFields
 import kotlinx.android.synthetic.main.fragment_register.*
+import javax.inject.Inject
 
 /**
  * A simple [Fragment] subclass.
  */
-class RegisterFragment : BaseAuthFragment() {
+@AuthScope
+class RegisterFragment
+@Inject
+constructor(
+    private val viewModelFactory: ViewModelProvider.Factory
+) : Fragment(R.layout.fragment_register) {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_register, container, false)
+    val viewModel: AuthViewModel by viewModels {
+        viewModelFactory
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        viewModel.cancelActiveJobs()
+        super.onCreate(savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

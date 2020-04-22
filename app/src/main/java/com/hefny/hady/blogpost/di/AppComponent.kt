@@ -1,24 +1,22 @@
 package com.hefny.hady.blogpost.di
 
 import android.app.Application
-import com.hefny.hady.blogpost.BaseApplication
+import com.hefny.hady.blogpost.di.auth.AuthComponent
+import com.hefny.hady.blogpost.di.main.MainComponent
 import com.hefny.hady.blogpost.session.SessionManager
+import com.hefny.hady.blogpost.ui.BaseActivity
 import dagger.BindsInstance
 import dagger.Component
-import dagger.android.AndroidInjectionModule
-import dagger.android.AndroidInjector
 import javax.inject.Singleton
 
 @Singleton
 @Component(
     modules = [
-        AndroidInjectionModule::class,
         AppModule::class,
-        ActivityBuildersModule::class,
-        ViewModelFactoryModule::class
+        SubComponentsModule::class
     ]
 )
-interface AppComponent : AndroidInjector<BaseApplication> {
+interface AppComponent {
 
     val sessionManager: SessionManager // must add because inject into abstract class
 
@@ -31,4 +29,7 @@ interface AppComponent : AndroidInjector<BaseApplication> {
         fun build(): AppComponent
     }
 
+    fun inject(baseActivity: BaseActivity)
+    fun authComponent(): AuthComponent.Factory
+    fun mainComponent(): MainComponent.Factory
 }

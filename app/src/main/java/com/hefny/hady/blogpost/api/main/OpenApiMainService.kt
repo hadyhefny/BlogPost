@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import com.hefny.hady.blogpost.api.GenericResponse
 import com.hefny.hady.blogpost.api.main.responses.BlogCreateUpdateResponse
 import com.hefny.hady.blogpost.api.main.responses.BlogListSearchResponse
+import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.util.GenericApiResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.*
 
+@MainScope
 interface OpenApiMainService {
     @GET("account/properties")
     fun getAccountProperties(

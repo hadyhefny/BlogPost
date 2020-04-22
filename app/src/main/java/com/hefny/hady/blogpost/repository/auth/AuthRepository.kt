@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import com.hefny.hady.blogpost.api.auth.OpenApiAuthService
 import com.hefny.hady.blogpost.api.auth.network_reponses.LoginResponse
 import com.hefny.hady.blogpost.api.auth.network_reponses.RegistrationResponse
+import com.hefny.hady.blogpost.di.auth.AuthScope
 import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
@@ -23,6 +24,7 @@ import com.hefny.hady.blogpost.util.*
 import kotlinx.coroutines.Job
 import javax.inject.Inject
 
+@AuthScope
 class AuthRepository
 @Inject
 constructor(
