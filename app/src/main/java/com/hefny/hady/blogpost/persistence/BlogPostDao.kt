@@ -1,6 +1,5 @@
 package com.hefny.hady.blogpost.persistence
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.util.Constants.Companion.PAGINATION_PAGE_SIZE
@@ -18,7 +17,7 @@ interface BlogPostDao {
         WHERE pk = :pk
     """
     )
-    fun updateBlogPost(
+    suspend fun updateBlogPost(
         pk: Int,
         title: String,
         body: String,
@@ -37,11 +36,11 @@ interface BlogPostDao {
          LIMIT (:page * :pageSize)
     """
     )
-    fun searchBlogPosts(
+    suspend fun searchBlogPosts(
         query: String,
         page: Int,
         pageSize: Int = PAGINATION_PAGE_SIZE
-    ): LiveData<List<BlogPost>>
+    ): List<BlogPost>
 
     @Query(
         """
@@ -52,11 +51,11 @@ interface BlogPostDao {
         ORDER BY date_updated DESC LIMIT(:page * :pageSize)
     """
     )
-    fun searchBlogPostsOrderByDateDESC(
+    suspend fun searchBlogPostsOrderByDateDESC(
         query: String,
         page: Int,
         pageSize: Int = PAGINATION_PAGE_SIZE
-    ): LiveData<List<BlogPost>>
+    ): List<BlogPost>
 
     @Query(
         """
@@ -67,11 +66,11 @@ interface BlogPostDao {
         ORDER BY date_updated ASC LIMIT(:page * :pageSize)
     """
     )
-    fun searchBlogPostsOrderByDateASC(
+    suspend fun searchBlogPostsOrderByDateASC(
         query: String,
         page: Int,
         pageSize: Int = PAGINATION_PAGE_SIZE
-    ): LiveData<List<BlogPost>>
+    ): List<BlogPost>
 
     @Query(
         """
@@ -82,11 +81,11 @@ interface BlogPostDao {
         ORDER BY username DESC LIMIT(:page * :pageSize)
     """
     )
-    fun searchBlogPostsOrderByAuthorDESC(
+    suspend fun searchBlogPostsOrderByAuthorDESC(
         query: String,
         page: Int,
         pageSize: Int = PAGINATION_PAGE_SIZE
-    ): LiveData<List<BlogPost>>
+    ): List<BlogPost>
 
     @Query(
         """
@@ -97,9 +96,9 @@ interface BlogPostDao {
         ORDER BY username ASC LIMIT(:page * :pageSize)
     """
     )
-    fun searchBlogPostsOrderByAuthorASC(
+    suspend fun searchBlogPostsOrderByAuthorASC(
         query: String,
         page: Int,
         pageSize: Int = PAGINATION_PAGE_SIZE
-    ): LiveData<List<BlogPost>>
+    ): List<BlogPost>
 }

@@ -16,21 +16,22 @@ import com.hefny.hady.blogpost.models.AUTH_TOKEN_BUNDLE_KEY
 import com.hefny.hady.blogpost.models.AuthToken
 import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.AuthActivity
-import com.hefny.hady.blogpost.ui.main.account.BaseAccountFragment
 import com.hefny.hady.blogpost.ui.main.account.ChangePasswordFragment
 import com.hefny.hady.blogpost.ui.main.account.UpdateAccountFragment
-import com.hefny.hady.blogpost.ui.main.blog.BaseBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.UpdateBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.ViewBlogFragment
-import com.hefny.hady.blogpost.ui.main.create_blog.BaseCreateBlogFragment
 import com.hefny.hady.blogpost.util.BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY
 import com.hefny.hady.blogpost.util.BottomNavController
 import com.hefny.hady.blogpost.util.BottomNavController.*
 import com.hefny.hady.blogpost.util.setUpNavigation
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import javax.inject.Inject
 import javax.inject.Named
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 class MainActivity : BaseActivity(),
     OnNavigationGraphChanged,
     OnNavigationReselectedListener {
@@ -62,6 +63,7 @@ class MainActivity : BaseActivity(),
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        inject()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupActionBar()
@@ -71,7 +73,9 @@ class MainActivity : BaseActivity(),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        // save auth token
         outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
+        // save backstack for bottom nav
         outState.putIntArray(
             BOTTOM_NAVIGATION_BACKSTACK_BUNDLE_KEY,
             bottomNavController.navigationBackStack.toIntArray()
@@ -141,24 +145,6 @@ class MainActivity : BaseActivity(),
 
     override fun onGraphChange() {
         expandAppBar(R.id.app_bar)
-        cancelActiveJobs()
-    }
-
-    private fun cancelActiveJobs() {
-        val fragments = bottomNavController.fragmentManager
-            .findFragmentById(bottomNavController.containerId)
-            ?.childFragmentManager
-            ?.fragments
-        if (fragments != null) {
-            for (fragment in fragments) {
-                when (fragment) {
-                    is BaseAccountFragment -> fragment.cancelActiveJobs()
-                    is BaseBlogFragment -> fragment.cancelActiveJobs()
-                    is BaseCreateBlogFragment -> fragment.cancelActiveJobs()
-                }
-            }
-        }
-        displayProgressBar(false)
     }
 
     override fun onReselectNavItem(navController: NavController, fragment: Fragment) =

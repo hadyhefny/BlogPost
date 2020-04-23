@@ -1,6 +1,5 @@
 package com.hefny.hady.blogpost.persistence
 
-import androidx.lifecycle.LiveData
 import com.hefny.hady.blogpost.models.BlogPost
 
 class BlogQueryUtils {
@@ -16,11 +15,11 @@ class BlogQueryUtils {
     }
 }
 
-fun BlogPostDao.returnOrderedBlogQuery(
+suspend fun BlogPostDao.returnOrderedBlogQuery(
     query: String,
     filterAndOrder: String,
     page: Int
-): LiveData<List<BlogPost>> {
+): List<BlogPost> {
     return when (filterAndOrder) {
         BlogQueryUtils.ORDER_BY_ASC_DATE_UPDATED -> {
             searchBlogPostsOrderByDateASC(

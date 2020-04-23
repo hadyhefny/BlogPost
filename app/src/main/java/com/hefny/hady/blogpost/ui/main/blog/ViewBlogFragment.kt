@@ -7,7 +7,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.net.toUri
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -16,32 +15,28 @@ import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.models.BlogPost
 import com.hefny.hady.blogpost.ui.AreYouSureCallback
-import com.hefny.hady.blogpost.ui.UIMessage
-import com.hefny.hady.blogpost.ui.UIMessageType
 import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.*
-import com.hefny.hady.blogpost.util.DateUtils
-import com.hefny.hady.blogpost.util.SuccessHandling
+import com.hefny.hady.blogpost.util.*
 import kotlinx.android.synthetic.main.fragment_view_blog.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import javax.inject.Inject
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @MainScope
 class ViewBlogFragment
 @Inject
 constructor(
     private val viewModelFactory: ViewModelProvider.Factory,
     private val requestManager: RequestManager
-) : BaseBlogFragment(R.layout.fragment_view_blog) {
-
-    val viewModel: BlogViewModel by viewModels {
-        viewModelFactory
-    }
+) : BaseBlogFragment(R.layout.fragment_view_blog, viewModelFactory) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        cancelActiveJobs()
         // restore state after process death
         savedInstanceState?.let { inState ->
             (inState[BLOG_VIEW_STATE_BUNDLE_KEY] as BlogViewState?)?.let { viewState ->
@@ -50,23 +45,21 @@ constructor(
         }
     }
 
+    //  Must save ViewState b/c in event of process death the LiveData in ViewModel will be lost
     override fun onSaveInstanceState(outState: Bundle) {
         val viewState = viewModel.viewState.value
+        //clear the list. Don't want to save a large list to bundle.
         viewState?.blogFields?.blogList = ArrayList()
         outState.putParcelable(BLOG_VIEW_STATE_BUNDLE_KEY, viewState)
         super.onSaveInstanceState(outState)
-    }
-
-    override fun cancelActiveJobs() {
-        viewModel.cancelActiveJobs()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         subscribeObservers()
-        appbarManagement.expandAppBar(R.id.app_bar)
         checkIfAuthorOfBlogPost()
+        appbarManagement.expandAppBar(R.id.app_bar)
         delete_button.setOnClickListener {
             confirmDeleteRequest()
         }
@@ -82,11 +75,17 @@ constructor(
                 // ignore
             }
         }
-        uiCommunicationListener.onUIMessageReceived(
-            UIMessage(
-                getString(R.string.are_you_sure_delete),
-                UIMessageType.AreYouSureDialog(callback)
-            )
+        uiCommunicationListener.onResponseReceived(
+            response = Response(
+                message = getString(R.string.are_you_sure_delete),
+                uiComponentType = UIComponentType.AreYouSureDialog(callback),
+                messageType = MessageType.Info()
+            ),
+            stateMessageCallback = object : StateMessageCallback {
+                override fun removeMessageFromStack() {
+                    viewModel.clearStateMessage()
+                }
+            }
         )
     }
 
@@ -95,31 +94,27 @@ constructor(
     }
 
     private fun subscribeObservers() {
-        viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState ->
-            if (dataState != null) {
-                stateChangeListener.onDataStateChange(dataState)
-                dataState.data?.let { data ->
-                    data.data?.getContentIfNotHandled()?.let { viewState ->
-                        viewModel.setIsAuthorOfBlogPost(
-                            viewState.viewBlogFields.isAuthorOfBlogPost
-                        )
-                    }
-                    data.response?.peekContent()?.let { response ->
-                        if (response.message == SuccessHandling.SUCCESS_BLOG_DELETED) {
-                            viewModel.removeDeletedBlogPost()
-                            findNavController().popBackStack()
-                        }
-                    }
-                }
-            }
-        })
-
         viewModel.viewState.observe(viewLifecycleOwner, Observer { viewState ->
             viewState.viewBlogFields.blogPost?.let { blogPost ->
                 setBlogProperties(blogPost)
             }
-            if (viewState.viewBlogFields.isAuthorOfBlogPost) {
+            if (viewState.viewBlogFields.isAuthorOfBlogPost == true) {
                 adaptViewToAuthorMode()
+            }
+        })
+        viewModel.numActiveJobs.observe(viewLifecycleOwner, Observer { jobCounter ->
+            uiCommunicationListener.displayProgressBar(viewModel.areAnyJobsActive())
+        })
+        viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
+            stateMessage?.let {
+                uiCommunicationListener.onResponseReceived(
+                    response = it.response,
+                    stateMessageCallback = object : StateMessageCallback {
+                        override fun removeMessageFromStack() {
+                            viewModel.clearStateMessage()
+                        }
+                    }
+                )
             }
         })
     }
@@ -167,11 +162,10 @@ constructor(
 
     private fun navUpdateBlogFragment() {
         try {
-            viewModel.setUpdateBlogPostFields(
-                viewModel.getBlogPost().title,
-                viewModel.getBlogPost().body,
-                viewModel.getBlogPost().image.toUri()
-            )
+            // prep for next fragment
+            viewModel.setUpdatedTitle(viewModel.getBlogPost().title)
+            viewModel.setUpdatedBody(viewModel.getBlogPost().body)
+            viewModel.setUpdatedUri(viewModel.getBlogPost().image.toUri())
             findNavController().navigate(R.id.action_viewBlogFragment_to_updateBlogFragment)
         } catch (e: Exception) {
             Log.e(TAG, "Exception: ${e.message}")

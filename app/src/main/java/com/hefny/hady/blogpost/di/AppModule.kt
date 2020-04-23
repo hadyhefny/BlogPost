@@ -15,7 +15,6 @@ import com.hefny.hady.blogpost.persistence.AppDatabase
 import com.hefny.hady.blogpost.persistence.AppDatabase.Companion.DATABASE_NAME
 import com.hefny.hady.blogpost.persistence.AuthTokenDao
 import com.hefny.hady.blogpost.util.Constants
-import com.hefny.hady.blogpost.util.LiveDataCallAdapterFactory
 import com.hefny.hady.blogpost.util.PreferenceKeys
 import dagger.Module
 import dagger.Provides
@@ -39,7 +38,6 @@ object AppModule {
     fun provideRetrofitBuilder(gson: Gson): Retrofit.Builder {
         return Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
-            .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create(gson))
     }
 

@@ -1,7 +1,6 @@
 package com.hefny.hady.blogpost.util
 
 class SuccessHandling {
-
     companion object {
         const val RESPONSE_PASSWORD_UPDATE_SUCCESS = "successfully changed password"
         const val RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE =
