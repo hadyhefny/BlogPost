@@ -5,11 +5,14 @@ import com.hefny.hady.blogpost.api.auth.OpenApiAuthService
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
 import com.hefny.hady.blogpost.persistence.AuthTokenDao
 import com.hefny.hady.blogpost.repository.auth.AuthRepository
+import com.hefny.hady.blogpost.repository.auth.AuthRepositoryImpl
 import com.hefny.hady.blogpost.session.SessionManager
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.FlowPreview
 import retrofit2.Retrofit
 
+@FlowPreview
 @Module
 object AuthModule {
 
@@ -33,7 +36,7 @@ object AuthModule {
         sharedPreferences: SharedPreferences,
         editor: SharedPreferences.Editor
     ): AuthRepository {
-        return AuthRepository(
+        return AuthRepositoryImpl(
             authTokenDao,
             accountPropertiesDao,
             openApiAuthService,

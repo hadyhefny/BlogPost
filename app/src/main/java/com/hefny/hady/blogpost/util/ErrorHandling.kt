@@ -5,9 +5,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 class ErrorHandling {
-
     companion object {
-
         private val TAG: String = "AppDebug"
         const val UNABLE_TO_RESOLVE_HOST = "Unable to resolve host"
         const val UNABLE_TODO_OPERATION_WO_INTERNET =
@@ -22,6 +20,15 @@ class ErrorHandling {
         const val PAGINATION_DONE_ERROR = "Invalid page."
         const val ERROR_CHECK_NETWORK_CONNECTION = "Check network connection."
         const val ERROR_UNKNOWN = "Unknown error"
+        const val INVALID_CREDENTIALS = "Invalid credentials"
+        const val SOMETHING_WRONG_WITH_IMAGE = "Something went wrong with the image."
+        const val INVALID_STATE_EVENT = "Invalid state event"
+        const val CANNOT_BE_UNDONE = "This can't be undone."
+        const val NETWORK_ERROR = "Network error"
+        const val NETWORK_ERROR_TIMEOUT = "Network timeout"
+        const val CACHE_ERROR_TIMEOUT = "Cache timeout"
+        const val UNKNOWN_ERROR = "Unknown error"
+
         fun isNetworkError(msg: String): Boolean {
             when {
                 msg.contains(UNABLE_TO_RESOLVE_HOST) -> return true

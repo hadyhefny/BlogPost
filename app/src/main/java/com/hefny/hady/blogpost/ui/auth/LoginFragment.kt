@@ -13,21 +13,21 @@ import com.hefny.hady.blogpost.di.auth.AuthScope
 import com.hefny.hady.blogpost.ui.auth.state.AuthStateEvent
 import com.hefny.hady.blogpost.ui.auth.state.LoginFields
 import kotlinx.android.synthetic.main.fragment_login.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import javax.inject.Inject
 
 /**
  * A simple [Fragment] subclass.
  */
+@FlowPreview
+@ExperimentalCoroutinesApi
 @AuthScope
 class LoginFragment
 @Inject
 constructor(
     private val viewModelFactory: ViewModelProvider.Factory
-) : Fragment(R.layout.fragment_login) {
-
-    val viewModel: AuthViewModel by viewModels {
-        viewModelFactory
-    }
+) : BaseAuthFragment(R.layout.fragment_login, viewModelFactory) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         viewModel.cancelActiveJobs()

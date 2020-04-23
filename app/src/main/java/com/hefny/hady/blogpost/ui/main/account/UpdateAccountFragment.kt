@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.hefny.hady.blogpost.R
@@ -15,23 +14,24 @@ import com.hefny.hady.blogpost.models.AccountProperties
 import com.hefny.hady.blogpost.ui.main.account.state.ACCOUNT_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.account.state.AccountStateEvent
 import com.hefny.hady.blogpost.ui.main.account.state.AccountViewState
+import com.hefny.hady.blogpost.util.StateMessageCallback
 import kotlinx.android.synthetic.main.fragment_update_account.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import javax.inject.Inject
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @MainScope
 class UpdateAccountFragment
 @Inject
 constructor(
     private val viewModelFactory: ViewModelProvider.Factory
-) : BaseAccountFragment(R.layout.fragment_update_account) {
-    val viewModel: AccountViewModel by viewModels {
-        viewModelFactory
-    }
+) : BaseAccountFragment(R.layout.fragment_update_account, viewModelFactory) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        cancelActiveJobs()
-        // restore state after process death
+        // Restore state after process death
         savedInstanceState?.let { inState ->
             (inState[ACCOUNT_VIEW_STATE_BUNDLE_KEY] as AccountViewState?)?.let { viewState ->
                 viewModel.setViewState(viewState)
@@ -44,10 +44,6 @@ constructor(
         super.onSaveInstanceState(outState)
     }
 
-    override fun cancelActiveJobs() {
-        viewModel.cancelActiveJobs()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
@@ -55,25 +51,38 @@ constructor(
     }
 
     private fun subscribeObservers() {
-        viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState ->
-            if (dataState != null) {
-                stateChangeListener.onDataStateChange(dataState)
-                Log.d(TAG, "UpdateAccountFragment: $dataState")
+        viewModel.viewState.observe(viewLifecycleOwner, Observer { viewState ->
+            if (viewState != null) {
+                viewState.accountProperties?.let {
+                    Log.d(TAG, "UpdateAccountFragment, ViewState: ${it}")
+                    setAccountDataFields(it)
+                }
             }
         })
-        viewModel.viewState.observe(viewLifecycleOwner, Observer { accountViewState ->
-            accountViewState.accountProperties?.let { accountProperties ->
-                Log.d(TAG, "UpdateAccountFragment, viewState: $accountProperties")
-                setAccountDataFields(accountProperties)
+        viewModel.numActiveJobs.observe(viewLifecycleOwner, Observer { jobCounter ->
+            uiCommunicationListener.displayProgressBar(viewModel.areAnyJobsActive())
+        })
+        viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
+            Log.d(TAG, "stack size: ${viewModel.getMessageStackSize()}")
+            Log.d(TAG, "state message: ${stateMessage}")
+            stateMessage?.let {
+                uiCommunicationListener.onResponseReceived(
+                    response = it.response,
+                    stateMessageCallback = object : StateMessageCallback {
+                        override fun removeMessageFromStack() {
+                            viewModel.clearStateMessage()
+                        }
+                    }
+                )
             }
         })
     }
 
     private fun setAccountDataFields(accountProperties: AccountProperties) {
-        input_email?.let {
+        if (input_email.text.isNullOrBlank()) {
             input_email.setText(accountProperties.email)
         }
-        input_username?.let {
+        if (input_username.text.isNullOrBlank()) {
             input_username.setText(accountProperties.username)
         }
     }

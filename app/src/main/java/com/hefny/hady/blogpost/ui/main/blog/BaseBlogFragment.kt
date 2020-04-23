@@ -7,31 +7,45 @@ import android.view.View
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.hefny.hady.blogpost.R
-import com.hefny.hady.blogpost.ui.*
+import com.hefny.hady.blogpost.ui.AppbarManagement
+import com.hefny.hady.blogpost.ui.KeyboardManagement
+import com.hefny.hady.blogpost.ui.StoragePermissionInterface
+import com.hefny.hady.blogpost.ui.UICommunicationListener
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.BlogViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 abstract class BaseBlogFragment
 constructor(
     @LayoutRes
-    private val layoutRes: Int
+    private val layoutRes: Int,
+    private val viewModelFactory: ViewModelProvider.Factory
 ) : Fragment(layoutRes) {
     val TAG: String = "AppDebug"
-    lateinit var stateChangeListener: DataStateChangeListener
     lateinit var keyboardManagement: KeyboardManagement
     lateinit var appbarManagement: AppbarManagement
     lateinit var uiCommunicationListener: UICommunicationListener
     lateinit var storagePermissionInterface: StoragePermissionInterface
 
+    val viewModel: BlogViewModel by viewModels {
+        viewModelFactory
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupActionBarWithNavController(R.id.blogFragment, activity as AppCompatActivity)
-        keyboardManagement.hideSoftKeyboard()
+        setupChannel()
     }
 
-    abstract fun cancelActiveJobs()
+    private fun setupChannel() = viewModel.setupChannel()
 
     fun setupActionBarWithNavController(fragmentId: Int, activity: AppCompatActivity) {
         val appBarConfiguration = AppBarConfiguration(setOf(fragmentId))
@@ -44,11 +58,6 @@ constructor(
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        try {
-            stateChangeListener = context as DataStateChangeListener
-        } catch (e: ClassCastException) {
-            Log.e(TAG, "$context must implement DataStateChangeListener")
-        }
         try {
             keyboardManagement = context as KeyboardManagement
         } catch (e: ClassCastException) {

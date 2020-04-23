@@ -2,7 +2,6 @@ package com.hefny.hady.blogpost.ui.auth
 
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,59 +9,54 @@ import android.view.animation.TranslateAnimation
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.auth.AuthScope
-import com.hefny.hady.blogpost.ui.DataState
-import com.hefny.hady.blogpost.ui.DataStateChangeListener
-import com.hefny.hady.blogpost.ui.Response
-import com.hefny.hady.blogpost.ui.ResponseType
-import com.hefny.hady.blogpost.util.Constants
+import com.hefny.hady.blogpost.util.*
 import kotlinx.android.synthetic.main.fragment_forgot_password.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@FlowPreview
+@ExperimentalCoroutinesApi
 @AuthScope
 class ForgotPasswordFragment
 @Inject
 constructor(
-    private val viewModelFactory: ViewModelProvider.Factory
-) : Fragment(R.layout.fragment_forgot_password) {
-
-    val viewModel: AuthViewModel by viewModels {
-        viewModelFactory
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        viewModel.cancelActiveJobs()
-        super.onCreate(savedInstanceState)
-    }
-
-    private val TAG: String = "AppDebug"
+    viewModelFactory: ViewModelProvider.Factory
+) : BaseAuthFragment(R.layout.fragment_forgot_password, viewModelFactory) {
     lateinit var webView: WebView
-    lateinit var stateChangeListener: DataStateChangeListener
-    val webInteractionCallback = object : WebAppInterface.OnWebInteractionCallBack {
-        override fun onSuccess(email: String) {
-            Log.d(TAG, "onSuccess: a reset link will be sent to $email")
-            onPasswordResetLinkSent()
-        }
+    val webInteractionCallback = object : WebAppInterface.OnWebInteractionCallback {
 
         override fun onError(errorMessage: String) {
             Log.e(TAG, "onError: $errorMessage")
-            val dataState = DataState.error<Any>(Response(errorMessage, ResponseType.Dialog()))
-            stateChangeListener.onDataStateChange(dataState)
+            uiCommunicationListener.onResponseReceived(
+                response = Response(
+                    message = errorMessage,
+                    uiComponentType = UIComponentType.Dialog(),
+                    messageType = MessageType.Error()
+                ),
+                stateMessageCallback = object : StateMessageCallback {
+                    override fun removeMessageFromStack() {
+                        viewModel.clearStateMessage()
+                    }
+                }
+            )
+        }
+
+        override fun onSuccess(email: String) {
+            Log.d(TAG, "onSuccess: a reset link will be sent to $email.")
+            onPasswordResetLinkSent()
         }
 
         override fun onLoading(isLoading: Boolean) {
-            Log.d(TAG, "onLoading: $isLoading")
-            CoroutineScope(Main).launch {
-                stateChangeListener.onDataStateChange(DataState.loading<Any>(isLoading))
-            }
+            Log.d(TAG, "onLoading... ")
+            uiCommunicationListener.displayProgressBar(isLoading)
         }
     }
 
@@ -75,17 +69,13 @@ constructor(
         }
     }
 
-    @SuppressLint("setJavaScriptEnabled")
-    private fun loadPasswordResetWebView() {
-        stateChangeListener.onDataStateChange(
-            DataState.loading<Any>(true)
-        )
+    @SuppressLint("SetJavaScriptEnabled")
+    fun loadPasswordResetWebView() {
+        uiCommunicationListener.displayProgressBar(true)
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                stateChangeListener.onDataStateChange(
-                    DataState.loading<Any>(false)
-                )
+                uiCommunicationListener.displayProgressBar(false)
             }
         }
         webView.loadUrl(Constants.PASSWORD_RESET_URL)
@@ -96,7 +86,11 @@ constructor(
         )
     }
 
-    class WebAppInterface(private val callback: OnWebInteractionCallBack) {
+    class WebAppInterface
+    constructor(
+        private val callback: OnWebInteractionCallback
+    ) {
+        private val TAG: String = "AppDebug"
 
         @JavascriptInterface
         fun onSuccess(email: String) {
@@ -113,17 +107,18 @@ constructor(
             callback.onLoading(isLoading)
         }
 
-        interface OnWebInteractionCallBack {
+        interface OnWebInteractionCallback {
             fun onSuccess(email: String)
             fun onError(errorMessage: String)
             fun onLoading(isLoading: Boolean)
         }
     }
 
-    private fun onPasswordResetLinkSent() {
+    fun onPasswordResetLinkSent() {
         CoroutineScope(Main).launch {
-            parent_view.removeView(webview)
-            webview.destroy()
+            parent_view.removeView(webView)
+            webView.destroy()
+
             val animation = TranslateAnimation(
                 password_reset_done_container.width.toFloat(),
                 0f,
@@ -133,15 +128,6 @@ constructor(
             animation.duration = 500
             password_reset_done_container.startAnimation(animation)
             password_reset_done_container.visibility = View.VISIBLE
-        }
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        try {
-            stateChangeListener = context as DataStateChangeListener
-        } catch (e: ClassCastException) {
-            Log.d(TAG, "onAttach: $context must implement DataStateChangeListener")
         }
     }
 }

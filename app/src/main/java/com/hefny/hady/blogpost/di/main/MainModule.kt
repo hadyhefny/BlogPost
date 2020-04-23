@@ -4,14 +4,14 @@ import com.hefny.hady.blogpost.api.main.OpenApiMainService
 import com.hefny.hady.blogpost.persistence.AccountPropertiesDao
 import com.hefny.hady.blogpost.persistence.AppDatabase
 import com.hefny.hady.blogpost.persistence.BlogPostDao
-import com.hefny.hady.blogpost.repository.main.AccountRepository
-import com.hefny.hady.blogpost.repository.main.BlogRepository
-import com.hefny.hady.blogpost.repository.main.CreateBlogRepository
+import com.hefny.hady.blogpost.repository.main.*
 import com.hefny.hady.blogpost.session.SessionManager
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.FlowPreview
 import retrofit2.Retrofit
 
+@FlowPreview
 @Module
 object MainModule {
 
@@ -31,7 +31,7 @@ object MainModule {
         accountPropertiesDao: AccountPropertiesDao,
         sessionManager: SessionManager
     ): AccountRepository {
-        return AccountRepository(
+        return AccountRepositoryImpl(
             openApiMainService,
             accountPropertiesDao,
             sessionManager
@@ -53,7 +53,7 @@ object MainModule {
         blogPostDao: BlogPostDao,
         sessionManager: SessionManager
     ): BlogRepository {
-        return BlogRepository(
+        return BlogRepositoryImpl(
             openApiMainService,
             blogPostDao,
             sessionManager
@@ -68,7 +68,7 @@ object MainModule {
         blogPostDao: BlogPostDao,
         sessionManager: SessionManager
     ): CreateBlogRepository {
-        return CreateBlogRepository(
+        return CreateBlogRepositoryImpl(
             openApiMainService,
             blogPostDao,
             sessionManager

@@ -1,125 +1,159 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
 import android.content.SharedPreferences
-import android.util.Log
-import androidx.lifecycle.LiveData
+import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.persistence.BlogQueryUtils
-import com.hefny.hady.blogpost.repository.main.BlogRepository
+import com.hefny.hady.blogpost.repository.main.BlogRepositoryImpl
 import com.hefny.hady.blogpost.session.SessionManager
 import com.hefny.hady.blogpost.ui.BaseViewModel
-import com.hefny.hady.blogpost.ui.DataState
-import com.hefny.hady.blogpost.ui.Loading
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
-import com.hefny.hady.blogpost.util.AbsentLiveData
-import com.hefny.hady.blogpost.util.PreferenceKeys
+import com.hefny.hady.blogpost.util.*
+import com.hefny.hady.blogpost.util.ErrorHandling.Companion.INVALID_STATE_EVENT
+import com.hefny.hady.blogpost.util.PreferenceKeys.Companion.BLOG_FILTER
+import com.hefny.hady.blogpost.util.PreferenceKeys.Companion.BLOG_ORDER
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
+@FlowPreview
+@MainScope
 class BlogViewModel
 @Inject
 constructor(
     private val sessionManager: SessionManager,
-    private val blogRepository: BlogRepository,
+    private val blogRepository: BlogRepositoryImpl,
     private val sharedPreferences: SharedPreferences,
     private val editor: SharedPreferences.Editor
-) : BaseViewModel<BlogStateEvent, BlogViewState>() {
+) : BaseViewModel<BlogViewState>() {
+
     init {
-        setBLogFilter(
+        setBlogFilter(
             sharedPreferences.getString(
-                PreferenceKeys.BLOG_FILTER,
+                BLOG_FILTER,
                 BlogQueryUtils.BLOG_FILTER_DATE_UPDATED
             )
         )
-        setBLogOrder(
+        setBlogOrder(
             sharedPreferences.getString(
-                PreferenceKeys.BLOG_ORDER,
-                BlogQueryUtils.BLOG_ORDER_ASC
-            )!!
-        )
-        Log.d(
-            TAG, "BlogViewModel: ${sharedPreferences.getString(
-                PreferenceKeys.BLOG_ORDER,
-                BlogQueryUtils.BLOG_ORDER_ASC
-            )!! + sharedPreferences.getString(
-                PreferenceKeys.BLOG_FILTER,
-                BlogQueryUtils.BLOG_FILTER_DATE_UPDATED
-            )}"
+                BLOG_ORDER,
+                BlogQueryUtils.BLOG_ORDER_DESC
+            )
         )
     }
 
-    override fun handleStateEvent(stateEvent: BlogStateEvent): LiveData<DataState<BlogViewState>> {
-        return when (stateEvent) {
-            is BlogStateEvent.BlogSearchEvent -> {
-                clearLayoutManagerState()
-                sessionManager.cachedToken.value?.let { authToken ->
-                    blogRepository.searchBlogPosts(
-                        authToken = authToken,
-                        query = getSearchQuery(),
-                        filterAndOrder = getOrder() + getFilter(),
-                        page = getPage()
-                    )
-                } ?: AbsentLiveData.create()
-            }
-            is BlogStateEvent.RestoreBlogListFromCache -> {
-                blogRepository.restoreBlogListFromCache(
-                    query = getSearchQuery(),
-                    filterAndOrder = getOrder() + getFilter(),
-                    page = getPage()
-                )
-            }
-            is BlogStateEvent.CheckAuthorOfBlogPostEvent -> {
-                sessionManager.cachedToken.value?.let { authToken ->
-                    blogRepository.isAuthorOfBlogPost(
-                        authToken = authToken,
-                        slug = getSlug()
-                    )
-                } ?: AbsentLiveData.create()
+    override fun handleNewData(data: BlogViewState) {
+
+        data.blogFields.let { blogFields ->
+
+            blogFields.blogList?.let { blogList ->
+                handleIncomingBlogListData(data)
             }
 
-            is BlogStateEvent.DeleteBlogPostEvent -> {
-                sessionManager.cachedToken.value?.let { authToken ->
-                    blogRepository.deleteBlogPost(
-                        authToken,
-                        getBlogPost()
-                    )
-                } ?: AbsentLiveData.create()
+            blogFields.isQueryExhausted?.let { isQueryExhausted ->
+                setQueryExhausted(isQueryExhausted)
             }
 
-            is BlogStateEvent.UpdatedBlogPostEvent -> {
-                val title = RequestBody.create(
-                    MediaType.parse("text/plain"),
-                    stateEvent.title
-                )
+        }
 
-                val body = RequestBody.create(
-                    MediaType.parse("text/plain"),
-                    stateEvent.body
-                )
+        data.viewBlogFields.let { viewBlogFields ->
 
-                sessionManager.cachedToken.value?.let { authToken ->
-                    blogRepository.updateBlogFields(
-                        authToken,
-                        getSlug(),
-                        title,
-                        body,
-                        stateEvent.image
-                    )
-                } ?: AbsentLiveData.create()
+            viewBlogFields.blogPost?.let { blogPost ->
+                setBlogPost(blogPost)
             }
 
-            is BlogStateEvent.None -> {
-                object : LiveData<DataState<BlogViewState>>() {
-                    override fun onActive() {
-                        super.onActive()
-                        value = DataState(
-                            null,
-                            Loading(false),
-                            null
+            viewBlogFields.isAuthorOfBlogPost?.let { isAuthor ->
+                setIsAuthorOfBlogPost(isAuthor)
+            }
+        }
+
+        data.updatedBlogFields.let { updatedBlogFields ->
+
+            updatedBlogFields.updatedImageUri?.let { uri ->
+                setUpdatedUri(uri)
+            }
+
+            updatedBlogFields.updatedBlogTitle?.let { title ->
+                setUpdatedTitle(title)
+            }
+
+            updatedBlogFields.updatedBlogBody?.let { body ->
+                setUpdatedBody(body)
+            }
+        }
+    }
+
+    override fun setStateEvent(stateEvent: StateEvent) {
+        if (!isJobAlreadyActive(stateEvent)) {
+            sessionManager.cachedToken.value?.let { authToken ->
+                val job: Flow<DataState<BlogViewState>> = when (stateEvent) {
+
+                    is BlogStateEvent.BlogSearchEvent -> {
+                        if (stateEvent.clearLayoutManagerState) {
+                            clearLayoutManagerState()
+                        }
+                        blogRepository.searchBlogPosts(
+                            stateEvent = stateEvent,
+                            authToken = authToken,
+                            query = getSearchQuery(),
+                            filterAndOrder = getOrder() + getFilter(),
+                            page = getPage()
                         )
                     }
+
+                    is BlogStateEvent.CheckAuthorOfBlogPostEvent -> {
+                        blogRepository.isAuthorOfBlogPost(
+                            stateEvent = stateEvent,
+                            authToken = authToken,
+                            slug = getSlug()
+                        )
+                    }
+                    is BlogStateEvent.DeleteBlogPostEvent -> {
+                        blogRepository.deleteBlogPost(
+                            stateEvent = stateEvent,
+                            authToken = authToken,
+                            blogPost = getBlogPost()
+                        )
+                    }
+                    is BlogStateEvent.UpdateBlogPostEvent -> {
+                        val title = RequestBody.create(
+                            MediaType.parse("text/plain"),
+                            stateEvent.title
+                        )
+                        val body = RequestBody.create(
+                            MediaType.parse("text/plain"),
+                            stateEvent.body
+                        )
+                        blogRepository.updateBlogPost(
+                            stateEvent = stateEvent,
+                            authToken = authToken,
+                            slug = getSlug(),
+                            title = title,
+                            body = body,
+                            image = stateEvent.image
+                        )
+                    }
+                    else -> {
+                        flow {
+                            emit(
+                                DataState.error<BlogViewState>(
+                                    response = Response(
+                                        message = INVALID_STATE_EVENT,
+                                        uiComponentType = UIComponentType.None(),
+                                        messageType = MessageType.Error()
+                                    ),
+                                    stateEvent = stateEvent
+                                )
+                            )
+                        }
+                    }
                 }
+                launchJob(stateEvent, job)
             }
         }
     }
@@ -129,21 +163,10 @@ constructor(
     }
 
     fun saveFilterOptions(filter: String, order: String) {
-        editor.putString(PreferenceKeys.BLOG_FILTER, filter)
+        editor.putString(BLOG_FILTER, filter)
         editor.apply()
-
-        editor.putString(PreferenceKeys.BLOG_ORDER, order)
+        editor.putString(BLOG_ORDER, order)
         editor.apply()
-    }
-
-    fun cancelActiveJobs() {
-        handlePendingData()
-        blogRepository.cancelActiveJobs()
-    }
-
-    // hide progressBar
-    private fun handlePendingData() {
-        setStateEvent(BlogStateEvent.None())
     }
 
     override fun onCleared() {
