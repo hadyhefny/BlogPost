@@ -15,6 +15,7 @@ import com.hefny.hady.blogpost.ui.BaseActivity
 import com.hefny.hady.blogpost.ui.auth.state.AuthStateEvent
 import com.hefny.hady.blogpost.ui.main.MainActivity
 import com.hefny.hady.blogpost.util.StateMessageCallback
+import com.hefny.hady.blogpost.util.SuccessHandling.Companion.RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE
 import kotlinx.android.synthetic.main.activity_auth.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -39,10 +40,9 @@ class AuthActivity : BaseActivity() {
         setContentView(R.layout.activity_auth)
         subscribeObservers()
         onRestoreInstanceState()
-        viewModel.setupChannel()
     }
 
-    fun onRestoreInstanceState() {
+    private fun onRestoreInstanceState() {
         val host = supportFragmentManager.findFragmentById(R.id.auth_fragments_container)
         host?.let {
             // do nothing
@@ -81,9 +81,9 @@ class AuthActivity : BaseActivity() {
         })
         viewModel.stateMessage.observe(this, Observer { stateMessage ->
             stateMessage?.let {
-//                if(it.response.message.equals(RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE)){
-//                    onFinishCheckPreviousAuthUser()
-//                }
+                if (it.response.message.equals(RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE)) {
+                    onFinishCheckPreviousAuthUser()
+                }
                 onResponseReceived(
                     response = it.response,
                     stateMessageCallback = object : StateMessageCallback {
@@ -104,7 +104,7 @@ class AuthActivity : BaseActivity() {
         })
     }
 
-    fun navMainActivity() {
+    private fun navMainActivity() {
         Log.d(TAG, "navMainActivity: called.")
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
@@ -116,9 +116,9 @@ class AuthActivity : BaseActivity() {
         viewModel.setStateEvent(AuthStateEvent.CheckPreviousAuthEvent())
     }
 
-//    private fun onFinishCheckPreviousAuthUser(){
-//        fragment_container.visibility = View.VISIBLE
-//    }
+    private fun onFinishCheckPreviousAuthUser() {
+        auth_fragments_container.visibility = View.VISIBLE
+    }
 
     override fun inject() {
         (application as BaseApplication).authComponent()

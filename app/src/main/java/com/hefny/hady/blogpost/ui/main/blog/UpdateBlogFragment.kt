@@ -12,16 +12,14 @@ import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.getUpdatedBlogUri
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setUpdatedBody
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setUpdatedTitle
-import com.hefny.hady.blogpost.ui.main.blog.viewmodel.setUpdatedUri
+import com.hefny.hady.blogpost.ui.main.blog.viewmodel.*
 import com.hefny.hady.blogpost.util.*
 import com.hefny.hady.blogpost.util.Constants.Companion.GALLERY_REQUEST_CODE
 import com.hefny.hady.blogpost.util.ErrorHandling.Companion.SOMETHING_WRONG_WITH_IMAGE
@@ -91,6 +89,11 @@ constructor(
         })
         viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
             stateMessage?.let {
+                if (stateMessage.response.message.equals(SuccessHandling.SUCCESS_BLOG_UPDATED)) {
+                    viewModel.updateListItem()
+                    findNavController().popBackStack()
+                }
+                Log.d(TAG, "UpdateBlogFragment stateMessage: $stateMessage")
                 uiCommunicationListener.onResponseReceived(
                     response = it.response,
                     stateMessageCallback = object : StateMessageCallback {
@@ -108,9 +111,11 @@ constructor(
         updatedBlogBody: String?,
         updateBlogImage: Uri?
     ) {
-        requestManager
-            .load(updateBlogImage)
-            .into(blog_image)
+        updateBlogImage?.let {
+            requestManager
+                .load(it)
+                .into(blog_image)
+        }
         blog_title.setText(updateBlogTitle)
         blog_body.setText(updatedBlogBody)
     }
@@ -121,17 +126,21 @@ constructor(
             imageUri.path?.let { filePath ->
                 val imageFile = File(filePath)
                 Log.d(TAG, "CreateBlogFragment: imageFile: $imageFile")
-                val requestBody = RequestBody.create(
-                    MediaType.parse("image/*"),
-                    imageFile
-                )
-                mulitpartBody = MultipartBody.Part.createFormData(
-                    "image",
-                    imageFile.name,
-                    requestBody
-                )
+                if (imageFile.exists()) {
+                    val requestBody = RequestBody.create(
+                        MediaType.parse("image/*"),
+                        imageFile
+                    )
+                    mulitpartBody = MultipartBody.Part.createFormData(
+                        "image",
+                        imageFile.name,
+                        requestBody
+                    )
+                }
             }
         }
+        Log.d(TAG, "saveChanges: CALLED")
+        Log.d(TAG, "saveChanges: the image: ${mulitpartBody}")
         viewModel.setStateEvent(
             BlogStateEvent.UpdateBlogPostEvent(
                 blog_title.text.toString(),

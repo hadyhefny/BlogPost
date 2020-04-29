@@ -7,8 +7,12 @@ import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.ui.main.blog.BlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.UpdateBlogFragment
 import com.hefny.hady.blogpost.ui.main.blog.ViewBlogFragment
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
+@FlowPreview
 @MainScope
 class BlogFragmentFactory
 @Inject

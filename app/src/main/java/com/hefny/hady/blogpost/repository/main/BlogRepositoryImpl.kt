@@ -255,6 +255,7 @@ constructor(
                 stateEvent = stateEvent
             ) {
                 override suspend fun handleSuccess(resultObj: BlogCreateUpdateResponse): DataState<BlogViewState> {
+                    Log.d(TAG, "handleSuccess, BlogRepository: CALLED")
                     val updatedBlogPost = resultObj.toBlogPost()
                     blogPostDao.updateBlogPost(
                         updatedBlogPost.pk,
