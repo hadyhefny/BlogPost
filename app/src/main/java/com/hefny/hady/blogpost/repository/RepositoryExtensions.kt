@@ -1,5 +1,7 @@
 package com.hefny.hady.blogpost.repository
 
+import android.util.Log
+import com.hefny.hady.blogpost.api.GenericResponse
 import com.hefny.hady.blogpost.util.*
 import com.hefny.hady.blogpost.util.Constants.Companion.CACHE_TIMEOUT
 import com.hefny.hady.blogpost.util.Constants.Companion.NETWORK_TIMEOUT
@@ -29,6 +31,7 @@ suspend fun <T> safeApiCall(
                 ApiResult.Success(apiCall.invoke())
             }
         } catch (throwable: Throwable) {
+            Log.d(TAG, "safeApiCall throwable: ${throwable.message}")
             when (throwable) {
                 is TimeoutCancellationException -> {
                     val code = 408 // timeout error code
@@ -39,6 +42,8 @@ suspend fun <T> safeApiCall(
                 }
                 is HttpException -> {
                     val code = throwable.code()
+                    Log.d(TAG, "safeApiCall: response ${throwable.response()}")
+                    Log.d(TAG, "safeApiCall: message ${throwable.message()}")
                     val errorResponse = convertErrorBody(throwable)
                     ApiResult.GenericError(
                         code,
@@ -98,7 +103,7 @@ fun <ViewState> buildError(
 
 private fun convertErrorBody(throwable: HttpException): String? {
     return try {
-        throwable.response()?.errorBody()?.toString()
+        throwable.response()?.errorBody()?.string()
     } catch (exception: Exception) {
         UNKNOWN_ERROR
     }

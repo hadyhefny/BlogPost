@@ -1,6 +1,7 @@
 package com.hefny.hady.blogpost.ui.main.blog.viewmodel
 
 import android.content.SharedPreferences
+import android.util.Log
 import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.persistence.BlogQueryUtils
 import com.hefny.hady.blogpost.repository.main.BlogRepositoryImpl
@@ -89,7 +90,9 @@ constructor(
     }
 
     override fun setStateEvent(stateEvent: StateEvent) {
+        Log.d(TAG, "setStateEvent: CALLED")
         if (!isJobAlreadyActive(stateEvent)) {
+            Log.d(TAG, "setStateEvent: ${!isJobAlreadyActive(stateEvent)}, CALLED")
             sessionManager.cachedToken.value?.let { authToken ->
                 val job: Flow<DataState<BlogViewState>> = when (stateEvent) {
 
@@ -121,6 +124,7 @@ constructor(
                         )
                     }
                     is BlogStateEvent.UpdateBlogPostEvent -> {
+                        Log.d(TAG, "setStateEvent: UpdateBlogPost CALLED")
                         val title = RequestBody.create(
                             MediaType.parse("text/plain"),
                             stateEvent.title

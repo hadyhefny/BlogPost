@@ -5,7 +5,11 @@ import android.os.Bundle
 import androidx.annotation.NavigationRes
 import androidx.navigation.fragment.NavHostFragment
 import com.hefny.hady.blogpost.ui.main.MainActivity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 
+@ExperimentalCoroutinesApi
+@FlowPreview
 class BlogNavHostFragment : NavHostFragment() {
     override fun onAttach(context: Context) {
         childFragmentManager.fragmentFactory =

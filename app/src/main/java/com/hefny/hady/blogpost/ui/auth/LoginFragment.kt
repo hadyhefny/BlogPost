@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.hefny.hady.blogpost.R
@@ -26,7 +25,7 @@ import javax.inject.Inject
 class LoginFragment
 @Inject
 constructor(
-    private val viewModelFactory: ViewModelProvider.Factory
+    viewModelFactory: ViewModelProvider.Factory
 ) : BaseAuthFragment(R.layout.fragment_login, viewModelFactory) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +43,7 @@ constructor(
     }
 
     private fun subscribeObservers() {
+        Log.d(TAG, "subscribeObservers: LoginFragment")
         viewModel.viewState.observe(viewLifecycleOwner, Observer { authViewState ->
             if (authViewState != null) {
                 authViewState.loginFields?.let { loginFields ->
@@ -55,8 +55,18 @@ constructor(
     }
 
     fun login() {
+        saveLoginFields()
         viewModel.setStateEvent(
             AuthStateEvent.LoginAttemptEvent(
+                input_email.text.toString(),
+                input_password.text.toString()
+            )
+        )
+    }
+
+    private fun saveLoginFields() {
+        viewModel.setLoginFields(
+            LoginFields(
                 input_email.text.toString(),
                 input_password.text.toString()
             )

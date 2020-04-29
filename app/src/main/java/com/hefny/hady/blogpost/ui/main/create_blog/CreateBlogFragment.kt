@@ -88,12 +88,21 @@ constructor(
             uiCommunicationListener.displayProgressBar(viewModel.areAnyJobsActive())
         })
         viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
+            var messageType: MessageType
             stateMessage?.let {
-                if (it.equals(SUCCESS_BLOG_CREATED)) {
+                if (it.response.message.equals(SUCCESS_BLOG_CREATED)) {
                     viewModel.clearNewBlogFields()
+                    messageType = MessageType.Success()
+                } else {
+                    messageType = MessageType.Error()
                 }
+                Log.d(TAG, "subscribeObservers: stateMessage: ${it.response.message}")
                 uiCommunicationListener.onResponseReceived(
-                    response = it.response,
+                    response = Response(
+                        it.response.message,
+                        UIComponentType.Dialog(),
+                        messageType
+                    ),
                     stateMessageCallback = object : StateMessageCallback {
                         override fun removeMessageFromStack() {
                             viewModel.clearStateMessage()
@@ -234,7 +243,8 @@ constructor(
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.publish -> {
-                val callback = object : AreYouSureCallback {
+                val callback = object :
+                    AreYouSureCallback {
                     override fun proceed() {
                         publishNewBlog()
                     }

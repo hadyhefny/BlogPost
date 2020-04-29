@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.ui
 
+import com.hefny.hady.blogpost.ui.AreYouSureCallback
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -10,19 +11,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.callbacks.onDismiss
 import com.google.android.material.appbar.AppBarLayout
+import com.hefny.hady.blogpost.BaseApplication
+import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.session.SessionManager
-import com.hefny.hady.blogpost.util.*
+import com.hefny.hady.blogpost.util.Constants.Companion.PERMISSIONS_REQUEST_READ_STORAGE
+import com.hefny.hady.blogpost.util.MessageType
+import com.hefny.hady.blogpost.util.Response
+import com.hefny.hady.blogpost.util.StateMessageCallback
+import com.hefny.hady.blogpost.util.UIComponentType
+import displayToast
 import javax.inject.Inject
 
 abstract class BaseActivity : AppCompatActivity(),
-    KeyboardManagement,
-    AppbarManagement,
     UICommunicationListener,
-    StoragePermissionInterface {
-    val TAG = "AppDebug"
+    KeyboardManagement,
+    StoragePermissionInterface,
+AppbarManagement{
 
-    private val dialogs: HashMap<String, MaterialDialog> = HashMap()
+    val TAG: String = "AppDebug"
+
+    private var dialogInView: MaterialDialog? = null
 
     @Inject
     lateinit var sessionManager: SessionManager
@@ -30,7 +40,8 @@ abstract class BaseActivity : AppCompatActivity(),
     abstract fun inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        inject()
+        (application as BaseApplication).appComponent
+            .inject(this)
         super.onCreate(savedInstanceState)
     }
 
@@ -62,7 +73,6 @@ abstract class BaseActivity : AppCompatActivity(),
                     stateMessageCallback = stateMessageCallback
                 )
             }
-
             is UIComponentType.None -> {
                 // This would be a good place to send to your Error Reporting
                 // software of choice (ex: Firebase crash reporting)
@@ -76,34 +86,32 @@ abstract class BaseActivity : AppCompatActivity(),
         response: Response,
         stateMessageCallback: StateMessageCallback
     ) {
+        Log.d(TAG, "displayDialog: ")
         response.message?.let { message ->
-            if (!dialogs.containsKey(message)) {
-                when (response.messageType) {
-                    is MessageType.Error -> {
-                        displayErrorDialog(
-                            message = message,
-                            stateMessageCallback = stateMessageCallback
-                        )
-                    }
-                    is MessageType.Success -> {
-                        displaySuccessDialog(
-                            message = message,
-                            stateMessageCallback = stateMessageCallback
-                        )
-                    }
-                    is MessageType.Info -> {
-                        displayInfoDialog(
-                            message = message,
-                            stateMessageCallback = stateMessageCallback
-                        )
-                    }
-                    else -> {
-                        // do nothing
-                        stateMessageCallback.removeMessageFromStack()
-                    }
+            dialogInView = when (response.messageType) {
+                is MessageType.Error -> {
+                    displayErrorDialog(
+                        message = message,
+                        stateMessageCallback = stateMessageCallback
+                    )
                 }
-            } else {
-                stateMessageCallback.removeMessageFromStack()
+                is MessageType.Success -> {
+                    displaySuccessDialog(
+                        message = message,
+                        stateMessageCallback = stateMessageCallback
+                    )
+                }
+                is MessageType.Info -> {
+                    displayInfoDialog(
+                        message = message,
+                        stateMessageCallback = stateMessageCallback
+                    )
+                }
+                else -> {
+                    // do nothing
+                    stateMessageCallback.removeMessageFromStack()
+                    null
+                }
             }
         } ?: stateMessageCallback.removeMessageFromStack()
     }
@@ -115,33 +123,134 @@ abstract class BaseActivity : AppCompatActivity(),
             val inputMethodManager = getSystemService(
                 Context.INPUT_METHOD_SERVICE
             ) as InputMethodManager
-            inputMethodManager.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+            inputMethodManager
+                .hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
         }
-    }
-
-    override fun expandAppBar(appbarId: Int) {
-        findViewById<AppBarLayout>(appbarId).setExpanded(true)
     }
 
     override fun isStoragePermissionGranted(): Boolean {
         if (
-            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED
-            &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+            != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             != PackageManager.PERMISSION_GRANTED
         ) {
+
+
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ),
-                Constants.PERMISSIONS_REQUEST_READ_STORAGE
+                PERMISSIONS_REQUEST_READ_STORAGE
             )
+
             return false
         } else {
+            // Permission has already been granted
             return true
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (dialogInView != null) {
+            (dialogInView as MaterialDialog).dismiss()
+            dialogInView = null
+        }
+    }
+
+    private fun displaySuccessDialog(
+        message: String?,
+        stateMessageCallback: StateMessageCallback
+    ): MaterialDialog {
+        return MaterialDialog(this)
+            .show {
+                title(R.string.text_success)
+                message(text = message)
+                positiveButton(R.string.text_ok) {
+                    stateMessageCallback.removeMessageFromStack()
+                    dismiss()
+                }
+                onDismiss {
+                    dialogInView = null
+                }
+                cancelable(false)
+            }
+    }
+
+    private fun displayErrorDialog(
+        message: String?,
+        stateMessageCallback: StateMessageCallback
+    ): MaterialDialog {
+        return MaterialDialog(this)
+            .show {
+                title(R.string.text_error)
+                message(text = message)
+                positiveButton(R.string.text_ok) {
+                    stateMessageCallback.removeMessageFromStack()
+                    dismiss()
+                }
+                onDismiss {
+                    dialogInView = null
+                }
+                cancelable(false)
+            }
+    }
+
+    private fun displayInfoDialog(
+        message: String?,
+        stateMessageCallback: StateMessageCallback
+    ): MaterialDialog {
+        return MaterialDialog(this)
+            .show {
+                title(R.string.text_info)
+                message(text = message)
+                positiveButton(R.string.text_ok) {
+                    stateMessageCallback.removeMessageFromStack()
+                    dismiss()
+                }
+                onDismiss {
+                    dialogInView = null
+                }
+                cancelable(false)
+            }
+    }
+
+    override fun expandAppBar(appbarId: Int) {
+        findViewById<AppBarLayout>(appbarId).setExpanded(true)
+    }
+
+    private fun areYouSureDialog(
+        message: String,
+        callback: AreYouSureCallback,
+        stateMessageCallback: StateMessageCallback
+    ): MaterialDialog {
+        return MaterialDialog(this)
+            .show {
+                title(R.string.are_you_sure)
+                message(text = message)
+                negativeButton(R.string.text_cancel) {
+                    callback.cancel()
+                    stateMessageCallback.removeMessageFromStack()
+                    dismiss()
+                }
+                positiveButton(R.string.text_yes) {
+                    callback.proceed()
+                    stateMessageCallback.removeMessageFromStack()
+                    dismiss()
+                }
+                onDismiss {
+                    dialogInView = null
+                }
+                cancelable(false)
+            }
     }
 }

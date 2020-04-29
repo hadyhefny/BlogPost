@@ -34,6 +34,7 @@ import com.hefny.hady.blogpost.persistence.BlogQueryUtils.Companion.BLOG_ORDER_D
 import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
 import com.hefny.hady.blogpost.ui.main.blog.viewmodel.*
+import com.hefny.hady.blogpost.util.ErrorHandling.Companion.isPaginationDone
 import com.hefny.hady.blogpost.util.StateMessageCallback
 import com.hefny.hady.blogpost.util.TopSpacingItemDecoration
 import kotlinx.android.synthetic.main.fragment_blog.*
@@ -47,7 +48,7 @@ import javax.inject.Inject
 class BlogFragment
 @Inject
 constructor(
-    private val viewModelFactory: ViewModelProvider.Factory,
+    viewModelFactory: ViewModelProvider.Factory,
     private val requestManager: RequestManager
 ) : BaseBlogFragment(R.layout.fragment_blog, viewModelFactory),
     BlogListAdapter.Interaction,
@@ -117,18 +118,25 @@ constructor(
             }
         })
         viewModel.numActiveJobs.observe(viewLifecycleOwner, Observer { jobCounter ->
+            Log.d(TAG, "subscribeObservers: BlogFragment, ${viewModel.areAnyJobsActive()}")
             uiCommunicationListener.displayProgressBar(viewModel.areAnyJobsActive())
         })
         viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
             stateMessage?.let {
-                uiCommunicationListener.onResponseReceived(
-                    response = it.response,
-                    stateMessageCallback = object : StateMessageCallback {
-                        override fun removeMessageFromStack() {
-                            viewModel.clearStateMessage()
+                Log.d(TAG, "subscribeObservers: BlogFragment, ${stateMessage.response.message}")
+                if (isPaginationDone(stateMessage.response.message)) {
+                    viewModel.setQueryExhausted(true)
+                    viewModel.clearStateMessage()
+                } else {
+                    uiCommunicationListener.onResponseReceived(
+                        response = it.response,
+                        stateMessageCallback = object : StateMessageCallback {
+                            override fun removeMessageFromStack() {
+                                viewModel.clearStateMessage()
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         })
     }
@@ -287,6 +295,7 @@ constructor(
                     setBlogFilter(newFilter)
                     setBlogOrder(newOrder)
                 }
+                onBlogSearchOrFilter()
                 dialog.dismiss()
             }
             view.findViewById<TextView>(R.id.negative_button).setOnClickListener {

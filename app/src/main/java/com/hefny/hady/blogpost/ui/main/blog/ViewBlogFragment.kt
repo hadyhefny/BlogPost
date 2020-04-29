@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.ui.main.blog
 
+import com.hefny.hady.blogpost.ui.AreYouSureCallback
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -14,7 +15,6 @@ import com.bumptech.glide.RequestManager
 import com.hefny.hady.blogpost.R
 import com.hefny.hady.blogpost.di.main.MainScope
 import com.hefny.hady.blogpost.models.BlogPost
-import com.hefny.hady.blogpost.ui.AreYouSureCallback
 import com.hefny.hady.blogpost.ui.main.blog.state.BLOG_VIEW_STATE_BUNDLE_KEY
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogStateEvent
 import com.hefny.hady.blogpost.ui.main.blog.state.BlogViewState
@@ -107,6 +107,10 @@ constructor(
         })
         viewModel.stateMessage.observe(viewLifecycleOwner, Observer { stateMessage ->
             stateMessage?.let {
+                if (it.response.message == SuccessHandling.SUCCESS_BLOG_DELETED) {
+                    viewModel.removeDeletedBlogPost()
+                    findNavController().popBackStack()
+                }
                 uiCommunicationListener.onResponseReceived(
                     response = it.response,
                     stateMessageCallback = object : StateMessageCallback {

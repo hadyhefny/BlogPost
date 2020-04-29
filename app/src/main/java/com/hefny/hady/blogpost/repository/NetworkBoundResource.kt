@@ -1,5 +1,6 @@
 package com.hefny.hady.blogpost.repository
 
+import android.util.Log
 import com.hefny.hady.blogpost.util.*
 import com.hefny.hady.blogpost.util.ErrorHandling.Companion.NETWORK_ERROR
 import com.hefny.hady.blogpost.util.ErrorHandling.Companion.UNKNOWN_ERROR
@@ -21,9 +22,12 @@ constructor(
         // ****** STEP 1: VIEW CACHE ******
         emit(returnCache(markJobComplete = false))
         // ****** STEP 2: MAKE NETWORK CALL, SAVE RESULT TO CACHE ******
-        val apiResult = safeApiCall(dispatcher) { apiCall }
+        val apiResult = safeApiCall(dispatcher) { apiCall.invoke() }
+        Log.d(TAG, "NetworkBoundResource, apiResult: $apiResult")
         when (apiResult) {
             is ApiResult.GenericError -> {
+                Log.d(TAG, "NetworkBoundResource, apiResult, Generic error ${apiResult.errorMessage}")
+                Log.d(TAG, "NetworkBoundResource, apiResult, Generic error, state event ${stateEvent.errorInfo()}")
                 emit(
                     buildError<ViewState>(
                         apiResult.errorMessage?.let { it } ?: UNKNOWN_ERROR,
@@ -33,6 +37,7 @@ constructor(
                 )
             }
             is ApiResult.NetworkError -> {
+                Log.d(TAG, "NetworkBoundResource, apiResult, Network error ${apiResult}")
                 emit(
                     buildError<ViewState>(
                         NETWORK_ERROR,
@@ -42,7 +47,8 @@ constructor(
                 )
             }
             is ApiResult.Success -> {
-                if (apiResult.value?.invoke() == null) {
+                Log.d(TAG, "NetworkBoundResource, apiResult,  SUccess ${apiResult.value}")
+                if (apiResult.value == null) {
                     emit(
                         buildError<ViewState>(
                             UNKNOWN_ERROR,
@@ -51,7 +57,7 @@ constructor(
                         )
                     )
                 } else {
-                    updateCache(apiResult.value.invoke() as NetworkObj)
+                    updateCache(apiResult.value as NetworkObj)
                 }
             }
         }
